@@ -343,3 +343,142 @@ def delete_teacher(tea_id):
 
     # 返回成功信息
     return jsonify({'message': f'ID 为 {tea_id} 的教师信息已删除'}), 200
+
+
+# 定义获取所有课程信息的 API
+@bp.route('/courses', methods=['GET'])
+def get_courses():
+    db = get_db()
+    # 创建一个 cursor 对象
+    cursor = db.cursor()
+
+    # 查询所有的课程信息
+    cursor.execute('SELECT * FROM courseinfo')
+
+    # 获取查询结果
+    courses = cursor.fetchall()
+
+    # 关闭游标
+    cursor.close()
+
+    # 将查询结果转换为字典格式，并返回
+    return jsonify({'courses': [dict(course) for course in courses]}), 200
+
+
+# 定义获取指定课程下的学生信息的 API
+@bp.route('/courses/<string:course_id>/students', methods=['GET'])
+def get_course(course_id):
+    db = get_db()
+    # 创建一个 cursor 对象
+    cursor = db.cursor()
+
+    # 使用指定的 course_id 查询课程下的学生信息
+    sql = f'SELECT studentinfo.stu_id, studentinfo.name FROM studentinfo' \
+          f' INNER JOIN student_course ON studentinfo.stu_id = student_course.student_id' \
+          f' WHERE student_course.course_id = "{course_id}"'
+
+    cursor.execute(sql)
+    # 获取查询结果
+    student_info = cursor.fetchall()
+
+    # 如果查询结果为空，则返回 404 错误
+    if not student_info:
+        return jsonify({'error': f'未找到 ID 为 {course_id} 的课程下的学生信息'}), 404
+
+    # 关闭游标
+    cursor.close()
+
+    # 将查询结果转换为字典格式，并返回
+    return jsonify({"student_info": student_info}), 200
+
+
+# 定义添加课程信息的 API
+@bp.route('/courses', methods=['POST'])
+def add_course():
+    # 获取 POST 请求上传的数据
+    course_id = request.json['course_id']
+    course_name = request.json['course_name']
+    course_introduction = request.json['course_introduction']
+    state = request.json['state']
+    tea_id = request.json['tea_id']
+
+    db = get_db()
+    # 创建一个 cursor 对象
+    cursor = db.cursor()
+
+    try:
+        # 插入新的课程信息
+        cursor.execute(f'INSERT INTO courseinfo (course_id, course_name, course_introduction, state, tea_id) VALUES '
+                       f'("{course_id}", "{course_name}", "{course_introduction}", "{state}", "{tea_id}")')
+
+        # 提交更改并关闭游标
+        db.commit()
+        cursor.close()
+    except db.IntegrityError:
+        return jsonify({'message': '教师不存在,无法添加课程信息'}), 400
+
+    # 返回成功信息
+    return jsonify({'message': '课程信息添加成功'}), 201
+
+
+# 定义更新课程信息的 API
+@bp.route('/courses/<string:course_id>', methods=['PUT'])
+def update_course(course_id):
+    db = get_db()
+    # 创建一个 cursor 对象
+    cursor = db.cursor()
+
+    # 查询指定的课程信息是否存在
+    cursor.execute(f'SELECT * FROM courseinfo WHERE course_id = "{course_id}"')
+    course = cursor.fetchone()
+
+    # 如果课程信息不存在，则返回 404 错误
+    if not course:
+        return jsonify({'error': f'未找到 ID 为 {course_id} 的课程信息'}), 404
+
+    # 更新课程信息
+    course_name = request.json.get('course_name', course['course_name'])
+    course_introduction = request.json.get('course_introduction', course['course_introduction'])
+    state = request.json.get('state', course['state'])
+    tea_id = request.json.get('tea_id', course['tea_id'])
+
+    try:
+        cursor.execute(
+            f'UPDATE courseinfo SET course_name = "{course_name}", course_introduction = "{course_introduction}", state = "{state}", tea_id = "{tea_id}" WHERE course_id = "{course_id}"')
+
+        # 提交更改并关闭游标
+        db.commit()
+        cursor.close()
+    except db.IntegrityError:
+        return jsonify({'message': '教师不存在,无法更新该课程信息'}), 400
+
+    # 返回成功信息
+    return jsonify({'message': f'ID 为 {course_id} 的课程信息已更新'}), 200
+
+
+# 定义删除课程信息的 API
+@bp.route('/courses/<string:course_id>', methods=['DELETE'])
+def delete_course(course_id):
+    db = get_db()
+    # 创建一个 cursor 对象
+    cursor = db.cursor()
+
+    # 使用指定的 course_id 查询课程信息
+    cursor.execute(f'SELECT * FROM courseinfo WHERE course_id = "{course_id}"')
+
+    # 获取查询结果
+    course = cursor.fetchone()
+
+    # 如果查询结果为空，则返回 404 错误
+    if not course:
+        return jsonify({'error': f'未找到 ID 为 {course_id} 的课程信息'}), 404
+
+    # 删除课程信息
+    cursor.execute(f'DELETE FROM courseinfo WHERE course_id = "{course_id}"')
+
+    # 提交更改并关闭游标
+    db.commit()
+    cursor.close()
+
+    # 返回成功信息
+    return jsonify({'message': f'ID 为 {course_id} 的课程信息已删除'}), 200
