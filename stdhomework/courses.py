@@ -43,14 +43,13 @@ def create_course_notice():
     cursor.execute("INSERT INTO course_noticeinfo (title, content, create_time, course_id) VALUES (%s, %s, %s, %s)",
                    (title, content, create_time, course_id))
     db.commit()
-
     # 返回信息
     return jsonify({'message': '课程通知创建成功'}), 201
 
 
 # 根据 id 更新 course_notice 表中的数据
-@bp.route('/course_notice/<int:course_id>', methods=['PUT'])
-def update_course_notice(course_id):
+@bp.route('/course_notice/<int:course_id>/<int:id>', methods=['PUT'])
+def update_course_notice(course_id,id):
     # 解析请求中的 JSON 数据
     data = request.get_json()
 
@@ -64,23 +63,28 @@ def update_course_notice(course_id):
     db = get_db()
     # 创建一个 cursor 对象
     cursor = db.cursor()
-    cursor.execute("UPDATE course_noticeinfo SET title = %s, content = %s, create_time = %s WHERE course_id = %s",
+    result = cursor.execute("UPDATE course_noticeinfo SET title = %s, content = %s, create_time = %s WHERE id = %s",
                    (title, content, create_time, course_id))
     db.commit()
 
-    # 返回信息
-    return jsonify({'message': '课程通知更新成功'}), 200
+    if result >0:
+        # 返回信息
+        return jsonify({'message': '课程通知更新成功'}), 200
+    else:
+        return jsonify({'mefssage':'该课程不存在'})
 
-
-# 根据 id 删除 system_notice 表中的数据
-@bp.route('/system_notice/<int:id>', methods=['DELETE'])
-def delete_system_notice(id):
+# 根据 id 删除 course_notice 表中的数据
+@bp.route('/course_notice/<int:course_id>/<int:id>', methods=['DELETE'])
+def delete_system_notice(course_id, id):
     # 删除数据
     db = get_db()
     # 创建一个 cursor 对象
     cursor = db.cursor()
-    cursor.execute("DELETE FROM system_notice WHERE id = %s", (id,))
+    result = cursor.execute("DELETE FROM course_noticeinfo WHERE id = %s", (id,))
     db.commit()
 
+    if result>0:
     # 返回信息
-    return jsonify({'message': '系统通知删除成功'}), 200
+        return jsonify({'message': '课程通知删除成功'}), 200
+    else:
+        return jsonify({'message':'该课程不存在或已被删除'}), 400
