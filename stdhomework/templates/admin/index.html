@@ -3,60 +3,132 @@
 <head>
     <meta charset="UTF-8">
     <title>系统通知</title>
-    <link rel="stylesheet" href="https://cdn.bootcss.com/jqueryui/1.12.1/jquery-ui.min.css">
-    <link rel="stylesheet" href="https://cdn.bootcss.com/easyui/1.8.1/themes/default/easyui.css">
-    <link rel="stylesheet" href="https://cdn.bootcss.com/easyui/1.8.1/themes/icon.css">
-    <link rel="stylesheet" href="https://cdn.bootcss.com/easyui/1.8.1/themes/color.css">
-    <link rel="stylesheet" href="https://cdn.bootcss.com/animate.css/3.7.2/animate.min.css">
+    <link rel="stylesheet" type="text/css" href="../static/jquery-easyui-1.10.15/themes/default/easyui.css">
+    <link rel="stylesheet" type="text/css" href="../static/jquery-easyui-1.10.15/themes/icon.css">
+    <link rel="stylesheet" type="text/css" href="../static/jquery-easyui-1.10.15/themes/color.css">
+    <script type="text/javascript" src="../static/jquery-easyui-1.10.15/jquery.min.js"></script>
+    <script type="text/javascript" src="../static/jquery-easyui-1.10.15/jquery.easyui.min.js"></script>
+
     <style type="text/css">
         body {
             margin: 0;
             padding: 0;
-            height: 100%;
         }
 
         .header {
             height: 60px;
-            background-color: #cccccc;
+            background-color: #409EFF;
             line-height: 60px;
             padding-left: 20px;
             font-size: 20px;
         }
 
         .content {
-            height: calc(100% - 60px);
-            overflow-x: hidden;
-            overflow-y: auto;
+            width: 100%;
+            height: calc(100vh - 60px);
+            display: flex;
+        }
+
+        .navbar {
+            height: 100%;
+            width: 200px;
+            background-color: #ffffff;
+            border-right: 1px solid #eee;
+        }
+
+        .main-content {
+            height: 100%;
+            flex: 1;
+        }
+
+        .navbar div {
+            width: 180px;
+            height: 45px;
+            padding-left: 20px;
+            display: flex;
+            align-items: center;
+        }
+
+        .navbar div:hover {
+            background-color: #C6E2FF;
+            transition: all 0.5s;
+        }
+
+        .main-content div {
+            width: calc(100% - 100px);
+            height: calc(100% - 100px);
+            padding: 50px;
         }
     </style>
+    <script type="text/javascript">
+        window.onload = function () {
+            navbarClick(1)
+        }
+    </script>
 </head>
 
-<body class="easyui-layout">
+<body>
 <div data-options="region:'north',border:false" class="header">
     系统通知
 </div>
-<div data-options="region:'center'" class="content">
-    <table id="notifications-grid"></table>
+<div class="content">
+    <!-- 导航栏 -->
+    <div class="navbar">
+        <!-- 添加导航，事件传参按div位置 -->
+        <div onclick="navbarClick(1)">系统通知</div>
+        <div onclick="navbarClick(2)">班级管理</div>
+        <div onclick="navbarClick(3)">学生管理</div>
+        <div onclick="navbarClick(4)">课程管理</div>
+    </div>
+    <!-- 内容显示区域 -->
+    <div class="main-content">
+        <table id="system-notice-table"></table>
+        <div style="display:none">班级管理</div>
+        <div style="display:none">学生管理</div>
+        <div style="display:none">课程管理</div>
+    </div>
 </div>
-<script src="https://cdn.bootcss.com/jquery/1.10.2/jquery.min.js"></script>
-<script src="https://cdn.bootcss.com/jqueryui/1.12.1/jquery-ui.min.js"></script>
-<script src="https://cdn.bootcss.com/easyui/1.8.1/jquery.easyui.min.js"></script>
-<script>
-    $('#notifications-grid').datagrid({
-        url: '/system_notice',
-        method: 'get',
-        fit: true,
+<script type="text/javascript">
+    function navbarClick(val) {
+        let dom = document.querySelectorAll('.navbar div')
+        let dom1 = document.querySelector('.main-content')
+        let mainChildren = dom1.children
+        for (let i = 0; i < dom.length; i++) {
+            let navbarChecked = dom[i]
+            let lookedContent = mainChildren[i]
+            if (i === val - 1) {
+                navbarChecked.style.backgroundColor = "#C6E2FF"
+                lookedContent.style.display = ""
+            } else {
+                navbarChecked.style.backgroundColor = ""
+                lookedContent.style.display = "none"
+            }
+        }
+    }
+
+$(document).ready(function() {
+    $('#system-notice-table').datagrid({
         fitColumns: true,
-        rownumbers: true,
-        pagination: true,
-        pageSize: 10,
         columns: [[
-            {field: 'id', title: 'ID', width: 60},
-            {field: 'title', title: '标题', width: 100},
-            {field: 'content', title: '内容', width: 400},
-            {field: 'create_time', title: '创建时间', width: 150}
-        ]]
+            {field: 'id', title: 'ID', width: '20%'},
+            {field: 'title', title: '标题', width: '30%'},
+            {field: 'content', title: '内容', width: '30%'},
+            {field: 'create_time', title: '创建时间', width: '20%'}
+        ]],
     });
+  $.ajax({
+    url: '/admin/system_notice',
+    type: 'GET',
+    contentType: 'application/json',
+    dataType: 'json',
+    success: function(data) {
+      console.log(data.system_notice);
+      $('#system-notice-table').datagrid('loadData', data.system_notice);
+    },
+    error: function(xhr, status, error) {
+      console.log(error);
+      $.messager.alert('错误', '加载数据出错：' + error, 'error');
+    }
+  });
+});
 </script>
-</body>
-</html>
