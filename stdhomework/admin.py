@@ -9,9 +9,23 @@ from stdhomework.db import get_db
 bp = Blueprint('admin', __name__, url_prefix='/admin')
 
 
+# 获取 system_notice 表中所有的数据
+@bp.route('/system_notice', methods=['GET'])
+def get_system_notice():
+    db = get_db()
+    # 创建一个 cursor 对象
+    cursor = db.cursor()
+    cursor.execute("SELECT * FROM system_notice")
+    result = cursor.fetchall()
+    # print(result)
+    if not result:
+        return jsonify({'error': '未找到系统通知'}), 404
+    return jsonify({"system_notice": result}), 200
+
+
 # 根据 id 获取 system_notice 表中的数据
 @bp.route('/system_notice/<int:id>', methods=['GET'])
-def get_system_notice(id):
+def get_system_notice_by_id(id):
     db = get_db()
     # 创建一个 cursor 对象
     cursor = db.cursor()
