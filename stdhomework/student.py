@@ -8,17 +8,6 @@ from stdhomework.db import get_db
 
 bp = Blueprint('student', __name__, url_prefix='/student')
 
-# @bp.route('/')
-# def index():
-#     db = get_db()
-#     # 创建一个 cursor 对象
-#     cur = db.cursor()
-#     # 执行 SELECT 语句
-#     cur.execute("SELECT * FROM notice")
-#     # 获取所有结果集
-#     results = cur.fetchall()
-#     return render_template('auth/index.html', notices=results)
-
 
 #查看学生课程列表
 @bp.route('<string:stu_id>/courses', methods=['GET'])

@@ -8,6 +8,9 @@ from stdhomework.db import get_db
 
 bp = Blueprint('admin', __name__, url_prefix='/admin')
 
+@bp.route('/')
+def index():
+    return render_template('admin/index.html')
 
 # 获取 system_notice 表中所有的数据
 @bp.route('/system_notice', methods=['GET'])

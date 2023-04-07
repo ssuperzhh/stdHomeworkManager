@@ -41,4 +41,16 @@ def create_app(test_config=None):
     from . import admin
     app.register_blueprint(admin.bp)
 
+    from . import template
+    app.register_blueprint(template.bp)
+
+    from . import classes
+    app.register_blueprint(classes.bp)
+
+    from . import teacher
+    app.register_blueprint(teacher.bp)
+
+    from . import courses
+    app.register_blueprint(courses.bp)
+
     return app

@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>系统通知</title>
+    <link rel="stylesheet" href="https://cdn.bootcss.com/jqueryui/1.12.1/jquery-ui.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/easyui/1.8.1/themes/default/easyui.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/easyui/1.8.1/themes/icon.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/easyui/1.8.1/themes/color.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/animate.css/3.7.2/animate.min.css">
+    <style type="text/css">
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+        }
+
+        .header {
+            height: 60px;
+            background-color: #cccccc;
+            line-height: 60px;
+            padding-left: 20px;
+            font-size: 20px;
+        }
+
+        .content {
+            height: calc(100% - 60px);
+            overflow-x: hidden;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+
+<body class="easyui-layout">
+<div data-options="region:'north',border:false" class="header">
+    系统通知
+</div>
+<div data-options="region:'center'" class="content">
+    <table id="notifications-grid"></table>
+</div>
+<script src="https://cdn.bootcss.com/jquery/1.10.2/jquery.min.js"></script>
+<script src="https://cdn.bootcss.com/jqueryui/1.12.1/jquery-ui.min.js"></script>
+<script src="https://cdn.bootcss.com/easyui/1.8.1/jquery.easyui.min.js"></script>
+<script>
+    $('#notifications-grid').datagrid({
+        url: '/system_notice',
+        method: 'get',
+        fit: true,
+        fitColumns: true,
+        rownumbers: true,
+        pagination: true,
+        pageSize: 10,
+        columns: [[
+            {field: 'id', title: 'ID', width: 60},
+            {field: 'title', title: '标题', width: 100},
+            {field: 'content', title: '内容', width: 400},
+            {field: 'create_time', title: '创建时间', width: 150}
+        ]]
+    });
+</script>
+</body>
+</html>
