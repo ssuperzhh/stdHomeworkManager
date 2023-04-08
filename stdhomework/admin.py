@@ -8,9 +8,11 @@ from stdhomework.db import get_db
 
 bp = Blueprint('admin', __name__, url_prefix='/admin')
 
+
 @bp.route('/')
 def index():
     return render_template('admin/index.html')
+
 
 # 获取 system_notice 表中所有的数据
 @bp.route('/system_notice', methods=['GET'])
@@ -138,10 +140,10 @@ def get_students():
 
     # 没有查询到任何学生记录，返回 404 错误响应
     if len(students) == 0:
-        return jsonify({'error': '未找到任何学生信息'}), 404
+        return jsonify({'code': 404, 'msg': '未找到任何学生信息'})
 
     # 返回查询结果
-    return jsonify({'students': students}), 200
+    return jsonify({'code': 0, "msg": "", "count": len(students), 'data': students})
 
 
 # 定义获取单个学生信息的 API

@@ -1,11 +1,12 @@
 import os
 
-from flask import Flask
+from flask import Flask, send_from_directory
 
 
 def create_app(test_config=None):
     # create and configure the app
     app = Flask(__name__, instance_relative_config=True)
+    app.config['STATIC_FOLDER'] = 'static'
     app.config.from_mapping(
         SECRET_KEY='dev',
         DATABASE={
@@ -27,6 +28,11 @@ def create_app(test_config=None):
     @app.route('/hello')
     def hello():
         return 'Hello, World!'
+
+    # 注册静态文件路由
+    @app.route('/static/<path:filename>')
+    def serve_static(filename):
+        return send_from_directory(app.config['STATIC_FOLDER'], filename)
 
     from . import db
     db.init_app(app)

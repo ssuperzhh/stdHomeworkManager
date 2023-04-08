@@ -10,11 +10,15 @@
     <script type="text/javascript" src="../static/jquery-easyui-1.10.15/jquery.easyui.min.js"></script>
 
     <style type="text/css">
-        body {
+        /* 设置区域高度 */
+        html, body {
+            height: 100%;
             margin: 0;
             padding: 0;
+            overflow: hidden;
         }
 
+        /* 设置顶部区域样式 */
         .header {
             height: 60px;
             background-color: #409EFF;
@@ -23,42 +27,65 @@
             font-size: 20px;
         }
 
+        /* 设置中间区域样式 */
         .content {
-            width: 100%;
-            height: calc(100vh - 60px);
+            height: calc(100% - 60px);
             display: flex;
         }
 
+        /* 设置导航栏样式 */
         .navbar {
             height: 100%;
-            width: 200px;
+            width: 150px;
             background-color: #ffffff;
             border-right: 1px solid #eee;
-        }
-
-        .main-content {
-            height: 100%;
-            flex: 1;
-        }
-
-        .navbar div {
-            width: 180px;
-            height: 45px;
-            padding-left: 20px;
             display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
             align-items: center;
         }
 
-        .navbar div:hover {
-            background-color: #C6E2FF;
-            transition: all 0.5s;
+        /* 设置导航栏条目样式 */
+        .navbar div {
+            height: 48px;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 16px;
+            color: #333;
+            cursor: pointer;
         }
 
-        .main-content div {
-            width: calc(100% - 100px);
-            height: calc(100% - 100px);
-            padding: 50px;
+        /* 设置导航栏条目激活样式 */
+        .navbar div.active {
+            background-color: #f2f2f2;
+            color: #409EFF;
+            font-weight: bold;
         }
+
+        /* 设置内容区域样式 */
+        .main-content {
+            height: 100%;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: stretch;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        /* 设置数据表格样式 */
+        #system-notice-table {
+            flex: 1;
+        }
+
+        /* 设置隐藏内容样式 */
+        .main-content > div[style="display:none"] {
+            display: none;
+        }
+
     </style>
     <script type="text/javascript">
         window.onload = function () {
@@ -88,6 +115,12 @@
         <div style="display:none">课程管理</div>
     </div>
 </div>
+<!-- 工具栏 -->
+<div id="datagridToolbar">
+    <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-add" onclick="addData()">添加</a>
+    <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-edit" onclick="editData()">编辑</a>
+    <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-remove" onclick="removeData()">删除</a>
+</div>
 <script type="text/javascript">
     function navbarClick(val) {
         let dom = document.querySelectorAll('.navbar div')
@@ -105,30 +138,66 @@
             }
         }
     }
-
-$(document).ready(function() {
-    $('#system-notice-table').datagrid({
-        fitColumns: true,
-        columns: [[
-            {field: 'id', title: 'ID', width: '20%'},
-            {field: 'title', title: '标题', width: '30%'},
-            {field: 'content', title: '内容', width: '30%'},
-            {field: 'create_time', title: '创建时间', width: '20%'}
-        ]],
-    });
-  $.ajax({
-    url: '/admin/system_notice',
-    type: 'GET',
-    contentType: 'application/json',
-    dataType: 'json',
-    success: function(data) {
-      console.log(data.system_notice);
-      $('#system-notice-table').datagrid('loadData', data.system_notice);
-    },
-    error: function(xhr, status, error) {
-      console.log(error);
-      $.messager.alert('错误', '加载数据出错：' + error, 'error');
+    // 添加数据
+    function addData() {
+        let index=$('#system-notice-table').datagrid('appendRow',$('#system-notice-table').datagrid("getRows").length-1);
+        $('#system-notice-table').datagrid('beginEdit', index)
     }
-  });
-});
+    // 编辑数据
+    function editData() {
+        // 获取 DataGrid 选中的行
+        let row = $('#system-notice-table').datagrid('getSelected');
+        let editIndex = $('#system-notice-table').datagrid('getRowIndex',row);
+        //console.log(editIndex);
+        if (row != null) {
+            $('#system-notice-table').datagrid('beginEdit', editIndex);
+
+        } else {
+            $.messager.tip("请选中一行进行编辑");
+        }
+    }
+    // 删除数据
+    function removeData() {
+        console.log()
+    }
+    $(document).ready(function () {
+        $('#system-notice-table').datagrid({
+            fitColumns: true,
+            singleSelect: true,
+            editing: true, // 开启编辑功能
+            columns: [[
+                {field: 'id', title: 'ID', width: '20%'},
+                {field: 'title', title: '标题', width: '30%'},
+                {field: 'content', title: '内容', width: '30%'},
+                {field: 'create_time', title: '创建时间', width: '20%'}
+            ]],
+            toolbar: '#datagridToolbar',
+            onSelect: function (index, row) {
+                console.log(row);
+                $(this).datagrid('beginEdit', index);
+            },
+            onClickCell: function(index, field, value) {
+                console.log(index, field, value);
+            },
+            // 其他配置省略
+            onDblClickCell: function(index, field, value){
+            // 双击单元格进入编辑模式
+            $(this).datagrid('beginEdit', index);
+          }
+        });
+        $.ajax({
+            url: '/admin/system_notice',
+            type: 'GET',
+            contentType: 'application/json',
+            dataType: 'json',
+            success: function (data) {
+                console.log(data.system_notice);
+                $('#system-notice-table').datagrid('loadData', data.system_notice);
+            },
+            error: function (xhr, status, error) {
+                console.log(error);
+                $.messager.alert('错误', '加载数据出错：' + error, 'error');
+            }
+        });
+    });
 </script>
