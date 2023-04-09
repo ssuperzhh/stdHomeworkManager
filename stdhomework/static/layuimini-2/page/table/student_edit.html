@@ -17,41 +17,40 @@
 <body>
 <div class="layui-form layuimini-form">
     <div class="layui-form-item">
-        <label class="layui-form-label required">用户名</label>
+        <label class="layui-form-label required">学号</label>
         <div class="layui-input-block">
-            <input type="text" name="username" lay-verify="required" lay-reqtext="用户名不能为空" placeholder="请输入用户名" value="" class="layui-input">
-            <tip>填写自己管理账号的名称。</tip>
+            <input type="text" name="stu_id" id="stu_id" lay-verify="required" lay-reqtext="学号不能为空"
+                   placeholder="请输入学号"
+                   value="" class="layui-input" readonly>
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label required">姓名</label>
+        <div class="layui-input-block">
+            <input type="text" name="name" id="name" lay-verify="required" lay-reqtext="姓名不能为空"
+                   placeholder="请输入姓名"
+                   value="" class="layui-input">
         </div>
     </div>
     <div class="layui-form-item">
-        <label class="layui-form-label required">性别</label>
+        <label class="layui-form-label">班级</label>
         <div class="layui-input-block">
-            <input type="radio" name="sex" value="男" title="男" checked="">
-            <input type="radio" name="sex" value="女" title="女">
-        </div>
-    </div>
-    <div class="layui-form-item">
-        <label class="layui-form-label required">手机</label>
-        <div class="layui-input-block">
-            <input type="number" name="phone" lay-verify="required" lay-reqtext="手机不能为空" placeholder="请输入手机" value="" class="layui-input">
+            <input type="text" name="class_name" id="class_name" lay-verify="required" lay-reqtext="班级不能为空"
+                   placeholder="请输入班级" value="" class="layui-input">
         </div>
     </div>
     <div class="layui-form-item">
         <label class="layui-form-label">邮箱</label>
         <div class="layui-input-block">
-            <input type="email" name="email" placeholder="请输入邮箱" value="" class="layui-input">
+            <input type="email" name="email" id="email" placeholder="请输入邮箱" value="" class="layui-input">
         </div>
     </div>
     <div class="layui-form-item">
-        <label class="layui-form-label">职业</label>
+        <label class="layui-form-label">联系方式</label>
         <div class="layui-input-block">
-            <input type="text" name="work" placeholder="请输入职业" value="" class="layui-input">
-        </div>
-    </div>
-    <div class="layui-form-item layui-form-text">
-        <label class="layui-form-label">备注信息</label>
-        <div class="layui-input-block">
-            <textarea name="remark" class="layui-textarea" placeholder="请输入备注信息"></textarea>
+            <input type="text" name="telephone" id="telephone" placeholder="请输入联系方式" value=""
+                   class="layui-input">
         </div>
     </div>
 
@@ -61,9 +60,23 @@
         </div>
     </div>
 </div>
-</div>
 <script src="../../lib/layui-v2.6.3/layui.js" charset="utf-8"></script>
 <script>
+    var dataString = sessionStorage.getItem('editingStudent');
+    console.log(dataString);
+    if (dataString) {
+        var dataObj = JSON.parse(dataString);
+        // 填充表单数据
+        document.getElementById("stu_id").value = dataObj.stu_id;
+        document.getElementById("name").value = dataObj.name;
+        document.getElementById("class_name").value = dataObj.class_name;
+        document.getElementById("email").value = dataObj.email;
+        document.getElementById("telephone").value = dataObj.telephone;
+
+        // 清除 sessionStorage 中保存的数据
+        sessionStorage.removeItem('editingStudent');
+    }
+
     layui.use(['form'], function () {
         var form = layui.form,
             layer = layui.layer,
@@ -71,22 +84,35 @@
 
         //监听提交
         form.on('submit(saveBtn)', function (data) {
-            var index = layer.alert(JSON.stringify(data.field), {
-                title: '最终的提交信息'
-            }, function () {
+            var param = JSON.stringify(data.field);
+            var stu_id = data.field.stu_id;  // 当前学生 ID
+            $.ajax({
+                url: '/admin/students/' + stu_id,
+                type: 'PUT',
+                contentType: 'application/json',
+                data: param,
+                dataType: 'json',
+                success: function (data) {
+                    var index = layer.alert('修改成功!', function () {
+                        // 关闭弹出层
+                        layer.close(index);
+                        var iframeIndex = parent.layer.getFrameIndex(window.name);
+                        parent.reloadTable();
+                        parent.layer.close(iframeIndex);
+                    });
 
-                // 关闭弹出层
-                layer.close(index);
-
-                var iframeIndex = parent.layer.getFrameIndex(window.name);
-                parent.layer.close(iframeIndex);
-
+                },
+                error: function (xhr, status, error) {
+                    console.log(error);
+                    $.messager.alert('错误', '加载数据出错：' + error, 'error');
+                }
             });
 
             return false;
         });
 
-    });
+    })
+    ;
 </script>
 </body>
 </html>

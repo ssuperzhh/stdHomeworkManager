@@ -56,6 +56,13 @@
 </div>
 <script src="../lib/layui-v2.6.3/layui.js" charset="utf-8"></script>
 <script>
+    // 定义加载表格的函数
+    function reloadTable() {
+        layui.use('table', function () {
+            var table = layui.table;
+            table.reload('currentTableId');
+        });
+    }
     layui.use(['form', 'table'], function () {
         var $ = layui.jquery,
             form = layui.form,
@@ -123,7 +130,7 @@
                     layer.full(index);
                 });
             } else if (obj.event === 'delete') {  // 监听删除操作
-                var checkStatus = teacher_manager.checkStatus('currentTableId')
+                var checkStatus = table.checkStatus('currentTableId')
                     , data = checkStatus.data;
                 layer.alert(JSON.stringify(data));
             }
@@ -137,7 +144,9 @@
         table.on('tool(currentTableFilter)', function (obj) {
             var data = obj.data;
             if (obj.event === 'edit') {
-
+                // 将数据保存到 sessionStorage 中
+                //console.log(obj.data)
+                sessionStorage.setItem('editingStudent', JSON.stringify(data));
                 var index = layer.open({
                     title: '编辑用户',
                     type: 2,

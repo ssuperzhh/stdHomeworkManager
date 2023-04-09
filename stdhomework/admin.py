@@ -173,27 +173,35 @@ def get_student(stu_id):
 # 定义添加学生信息的 API
 @bp.route('/students', methods=['POST'])
 def add_student():
-    # 获取 POST 请求上传的数据
-    stu_id = request.json['stu_id']
-    name = request.json['name']
-    class_name = request.json['class_name']
-    email = request.json['email']
-    telephone = request.json['telephone']
+    try:
+        # 获取 POST 请求上传的数据
+        stu_id = request.json['stu_id']
+        name = request.json['name']
+        class_name = request.json['class_name']
+        email = request.json['email']
+        telephone = request.json['telephone']
 
-    db = get_db()
-    # 创建一个 cursor 对象
-    cursor = db.cursor()
+        db = get_db()
+        # 创建一个 cursor 对象
+        cursor = db.cursor()
 
-    # 插入新的学生信息
-    cursor.execute(f'INSERT INTO studentinfo (stu_id, name, class_name, email, telephone) VALUES '
-                   f'("{stu_id}", "{name}", "{class_name}", "{email}", "{telephone}")')
+        # 插入新的学生信息
+        cursor.execute(f'INSERT INTO studentinfo (stu_id, name, class_name, email, telephone) VALUES '
+                       f'("{stu_id}", "{name}", "{class_name}", "{email}", "{telephone}")')
 
-    # 提交更改并关闭游标
-    db.commit()
-    cursor.close()
+        # 提交更改并关闭游标
+        db.commit()
+        cursor.close()
 
-    # 返回成功信息
-    return jsonify({'message': '学生信息添加成功'}), 201
+        # 返回成功信息
+        return jsonify({'code': 201, 'msg': '学生信息添加成功'})
+    except Exception as e:
+        # 如果出现异常，回滚并关闭游标
+        db.rollback()
+        cursor.close()
+
+        # 返回错误信息
+        return jsonify({'code': 500, 'msg': str(e)})
 
 
 # 定义更新学生信息的 API
