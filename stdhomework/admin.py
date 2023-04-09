@@ -217,7 +217,7 @@ def update_student(stu_id):
 
     # 如果学生信息不存在，则返回 404 错误
     if not student:
-        return jsonify({'error': f'未找到 ID 为 {stu_id} 的学生信息'}), 404
+        return jsonify({'code': 404, 'msg': f'未找到 ID 为 {stu_id} 的学生信息'})
 
     # 更新学生信息
     name = request.json.get('name', student['name'])
@@ -233,7 +233,7 @@ def update_student(stu_id):
     cursor.close()
 
     # 返回成功信息
-    return jsonify({'message': f'ID 为 {stu_id} 的学生信息已更新'}), 200
+    return jsonify({'code': 200, 'msg': f'ID 为 {stu_id} 的学生信息已更新'})
 
 
 # 定义删除学生信息的 API
@@ -251,7 +251,7 @@ def delete_student(stu_id):
 
     # 如果查询结果为空，则返回 404 错误
     if not student:
-        return jsonify({'error': f'未找到 ID 为 {stu_id} 的学生信息'}), 404
+        return jsonify({'code': 404, 'msg': f'未找到 ID 为 {stu_id} 的学生信息'})
 
     # 删除学生信息
     cursor.execute(f'DELETE FROM studentinfo WHERE stu_id = "{stu_id}"')
@@ -261,7 +261,7 @@ def delete_student(stu_id):
     cursor.close()
 
     # 返回成功信息
-    return jsonify({'message': f'ID 为 {stu_id} 的学生信息已删除'}), 200
+    return jsonify({'code': 200, 'msg': f'ID 为 {stu_id} 的学生信息已删除'}), 200
 
 
 # 定义获取教师信息列表的 API

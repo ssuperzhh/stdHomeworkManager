@@ -168,6 +168,28 @@
                 return false;
             } else if (obj.event === 'delete') {
                 layer.confirm('真的删除行么', function (index) {
+                    $.ajax({
+                        url: '/admin/students/'+data.stu_id,
+                        type: 'DELETE',
+                        contentType: 'application/json',
+                        dataType: 'json',
+                        success: function (data) {
+                            if (data.code == '200') {
+                                var index = layer.alert(data.msg, function () {
+                                    // 关闭弹出层
+                                    layer.close(index);
+                                    var iframeIndex = parent.layer.getFrameIndex(window.name);
+                                    parent.reloadTable();
+                                    parent.layer.close(iframeIndex);
+                                });
+                            } else
+                                var index = layer.alert('添加失败!' + data.msg);
+                        },
+                        error: function (xhr, status, error) {
+                            console.log(error);
+                            $.messager.alert('错误', '加载数据出错：' + error, 'error');
+                        }
+                    });
                     obj.del();
                     layer.close(index);
                 });
