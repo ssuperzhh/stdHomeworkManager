@@ -3,13 +3,13 @@ from flask import (
 )
 from werkzeug.exceptions import abort
 
-#from stdhomework.auth import login_required
+# from stdhomework.auth import login_required
 from stdhomework.db import get_db
 
 bp = Blueprint('teacher', __name__, url_prefix='/teacher')
 
 
-#查看教师课程列表
+# 查看教师课程列表
 @bp.route('<string:tea_id>/courses', methods=['GET'])
 def get_teacher_courses(tea_id):
     db = get_db()
@@ -28,7 +28,7 @@ def get_teacher_courses(tea_id):
 
     # 如果查询结果为空，则返回 404 错误
     if not teacher_courses:
-        return jsonify({'error': f'未找到 ID 为 {tea_id} 的教师的课表信息'}), 404
+        return jsonify({'code': 404, 'msg': f'未找到 ID 为 {tea_id} 的教师的课表信息'})
 
     # 返回查询结果
-    return jsonify({'teacher_courses': teacher_courses}), 200
+    return jsonify({'code': 0, 'data': teacher_courses, 'msg': ""})

@@ -282,35 +282,44 @@ def get_teacher():
 
     # 如果查询结果为空，则返回 404 错误
     if not teachers:
-        return jsonify({'error': '未找到任何教师信息'}), 404
+        return jsonify({'code': 404, 'msg': '未找到任何教师信息'})
 
-        # 返回查询结果
-    return jsonify({'teachers': teachers}), 200
+    # 返回查询结果
+    return jsonify({'code': 0, "msg": "", "count": len(teachers), 'data': teachers})
 
 
 # 定义添加教师信息的 API
 @bp.route('/teachers', methods=['POST'])
 def add_teacher():
-    # 获取 POST 请求上传的数据
-    tea_id = request.json['tea_id']
-    name = request.json['name']
-    email = request.json['email']
-    telephone = request.json['telephone']
+    try:
+        # 获取 POST 请求上传的数据
+        tea_id = request.json['tea_id']
+        name = request.json['name']
+        email = request.json['email']
+        telephone = request.json['telephone']
 
-    db = get_db()
-    # 创建一个 cursor 对象
-    cursor = db.cursor()
+        db = get_db()
+        # 创建一个 cursor 对象
+        cursor = db.cursor()
 
-    # 插入新的教师信息
-    cursor.execute(f'INSERT INTO teacherinfo (tea_id, name, email, telephone) VALUES '
-                   f'("{tea_id}", "{name}","{email}","{telephone}")')
+        # 插入新的教师信息
+        cursor.execute(f'INSERT INTO teacherinfo (tea_id, name, email, telephone) VALUES '
+                       f'("{tea_id}", "{name}","{email}","{telephone}")')
 
-    # 提交更改并关闭游标
-    db.commit()
-    cursor.close()
+        # 提交更改并关闭游标
+        db.commit()
+        cursor.close()
 
-    # 返回成功信息
-    return jsonify({'message': '教师信息添加成功'}), 201
+        # 返回成功信息
+        return jsonify({'code': 201, 'msg': '教师添加成功'})
+
+    except Exception as e:
+        # 如果出现异常，回滚并关闭游标
+        db.rollback()
+        cursor.close()
+
+        # 返回错误信息
+        return jsonify({'code': 500, 'msg': str(e)})
 
 
 # 定义更新教师信息的 API
@@ -326,7 +335,7 @@ def update_teacher(tea_id):
 
     # 如果教师信息不存在，则返回 404 错误
     if not teacher:
-        return jsonify({'error': f'未找到 ID 为 {tea_id} 的教师信息'}), 404
+        return jsonify({'code': 404, 'msg': f'未找到 ID 为 {tea_id} 的教师信息'})
 
     # 更新教师信息
     name = request.json.get('name', teacher['name'])
@@ -341,35 +350,44 @@ def update_teacher(tea_id):
     cursor.close()
 
     # 返回成功信息
-    return jsonify({'message': f'ID 为 {tea_id} 的教师信息已更新'}), 200
+    return jsonify({'code': 200, 'msg': f'ID 为 {tea_id} 的教师信息已更新'})
 
 
 # 定义删除教师信息的 API
 @bp.route('/teachers/<string:tea_id>', methods=['DELETE'])
 def delete_teacher(tea_id):
-    db = get_db()
-    # 创建一个 cursor 对象
-    cursor = db.cursor()
+    try:
+        db = get_db()
+        # 创建一个 cursor 对象
+        cursor = db.cursor()
 
-    # 使用指定的 tea_id 查询教师信息
-    cursor.execute(f'SELECT * FROM teacherinfo WHERE tea_id = "{tea_id}"')
+        # 使用指定的 tea_id 查询教师信息
+        cursor.execute(f'SELECT * FROM teacherinfo WHERE tea_id = "{tea_id}"')
 
-    # 获取查询结果
-    teacher = cursor.fetchone()
+        # 获取查询结果
+        teacher = cursor.fetchone()
 
-    # 如果查询结果为空，则返回 404 错误
-    if not teacher:
-        return jsonify({'error': f'未找到 ID 为 {tea_id} 的教师信息'}), 404
+        # 如果查询结果为空，则返回 404 错误
+        if not teacher:
+            return jsonify({'code': 404, 'msg': f'未找到 ID 为 {tea_id} 的教师信息'})
 
-    # 删除教师信息
-    cursor.execute(f'DELETE FROM teacherinfo WHERE tea_id = "{tea_id}"')
+        # 删除教师信息
+        cursor.execute(f'DELETE FROM teacherinfo WHERE tea_id = "{tea_id}"')
 
-    # 提交更改并关闭游标
-    db.commit()
-    cursor.close()
+        # 提交更改并关闭游标
+        db.commit()
+        cursor.close()
 
-    # 返回成功信息
-    return jsonify({'message': f'ID 为 {tea_id} 的教师信息已删除'}), 200
+        # 返回成功信息
+        return jsonify({'code': 200, 'msg': f'ID 为 {tea_id} 的教师信息已删除'})
+
+    except Exception as e:
+        # 如果出现异常，回滚并关闭游标
+        db.rollback()
+        cursor.close()
+
+        # 返回错误信息
+        return jsonify({'code': 500, 'msg': str(e)})
 
 
 # 定义获取所有课程信息的 API
@@ -441,11 +459,11 @@ def add_course():
         # 提交更改并关闭游标
         db.commit()
         cursor.close()
-    except db.IntegrityError:
-        return jsonify({'message': '教师不存在,无法添加课程信息'}), 400
+    except Exception as e:
+        return jsonify({'code': 500, 'msg': str(e)})
 
     # 返回成功信息
-    return jsonify({'message': '课程信息添加成功'}), 201
+    return jsonify({'code': 201, 'msg': '课程信息添加成功'})
 
 
 # 定义更新课程信息的 API
@@ -486,26 +504,49 @@ def update_course(course_id):
 # 定义删除课程信息的 API
 @bp.route('/courses/<string:course_id>', methods=['DELETE'])
 def delete_course(course_id):
-    db = get_db()
-    # 创建一个 cursor 对象
-    cursor = db.cursor()
+    try:
+        db = get_db()
+        # 创建一个 cursor 对象
+        cursor = db.cursor()
 
-    # 使用指定的 course_id 查询课程信息
-    cursor.execute(f'SELECT * FROM courseinfo WHERE course_id = "{course_id}"')
+        # 使用指定的 course_id 查询课程信息
+        cursor.execute(f'SELECT * FROM courseinfo WHERE course_id = "{course_id}"')
 
-    # 获取查询结果
-    course = cursor.fetchone()
+        # 获取查询结果
+        course = cursor.fetchone()
 
-    # 如果查询结果为空，则返回 404 错误
-    if not course:
-        return jsonify({'error': f'未找到 ID 为 {course_id} 的课程信息'}), 404
+        # 如果查询结果为空，则返回 404 错误
+        if not course:
+            return jsonify({'code': 404, 'msg': f'未找到 ID 为 {course_id} 的课程信息'})
 
-    # 删除课程信息
-    cursor.execute(f'DELETE FROM courseinfo WHERE course_id = "{course_id}"')
+        # 先查询该课程是否有课程作业
+        homeworkinfo = cursor.execute(f'SELECT * FROM homeworkinfo WHERE course_id = "{course_id}"')
+        if homeworkinfo:  # 如果有通知则先删除通知表的数据
+            cursor.execute(f'DELETE FROM homeworkinfo WHERE course_id = "{course_id}"')
 
-    # 提交更改并关闭游标
-    db.commit()
-    cursor.close()
+        # 先查询该课程是否有课程通知
+        course_noticeinfo = cursor.execute(f'SELECT * FROM course_noticeinfo WHERE course_id = "{course_id}"')
+        if course_noticeinfo:  # 如果有通知则先删除通知表的数据
+            cursor.execute(f'DELETE FROM course_noticeinfo WHERE course_id = "{course_id}"')
 
-    # 返回成功信息
-    return jsonify({'message': f'ID 为 {course_id} 的课程信息已删除'}), 200
+        student_course = cursor.execute(f'SELECT * FROM student_course WHERE course_id = "{course_id}"')
+        if student_course:
+            # 先删除关联表中的内容
+            cursor.execute(f'DELETE FROM student_course WHERE course_id = "{course_id}"')
+        # 最后删除课程信息
+        cursor.execute(f'DELETE FROM courseinfo WHERE course_id = "{course_id}"')
+
+        # 提交更改并关闭游标
+        db.commit()
+        cursor.close()
+
+        # 返回成功信息
+        return jsonify({'code': 200, 'msg': f'ID 为 {course_id} 的课程信息已删除'})
+
+    except Exception as e:
+        # 如果出现异常，回滚并关闭游标
+        db.rollback()
+        cursor.close()
+
+        # 返回错误信息
+        return jsonify({'code': 500, 'msg': str(e)})

@@ -19,15 +19,9 @@
                 <form class="layui-form layui-form-pane" action="">
                     <div class="layui-form-item">
                         <div class="layui-inline">
-                            <label class="layui-form-label">学生姓名</label>
+                            <label class="layui-form-label">教师姓名</label>
                             <div class="layui-input-inline">
                                 <input type="text" name="std_name" autocomplete="off" class="layui-input">
-                            </div>
-                        </div>
-                        <div class="layui-inline">
-                            <label class="layui-form-label">班级名称</label>
-                            <div class="layui-input-inline">
-                                <input type="text" name="class_name" autocomplete="off" class="layui-input">
                             </div>
                         </div>
                         <div class="layui-inline">
@@ -53,7 +47,7 @@
         <script type="text/html" id="currentTableBar">
             <a class="layui-btn layui-btn-normal layui-btn-xs data-count-edit" lay-event="edit">编辑</a>
             <a class="layui-btn layui-btn-xs layui-btn-danger data-count-delete" lay-event="delete">删除</a>
-            <a class="layui-btn layui-btn-xs layui-btn" lay-event="viewCourses">查看课表</a>
+            <a class="layui-btn layui-btn-xs layui-btn" lay-event="viewCourses">查看所授课表</a>
         </script>
 
     </div>
@@ -75,7 +69,7 @@
 
         table.render({
             elem: '#currentTableId',
-            url: '/admin/students',
+            url: '/admin/teachers',
             toolbar: '#toolbarDemo',
             defaultToolbar: ['filter', 'exports', 'print', {
                 title: '提示',
@@ -84,9 +78,8 @@
             }],
             cols: [[
                 {type: "checkbox", width: 50},
-                {field: 'stu_id', title: '学号', width: '15%'},
+                {field: 'tea_id', title: '教师号', width: '15%'},
                 {field: 'name', title: '姓名', width: '10%'},
-                {field: 'class_name', title: '班级', width: '15%'},
                 {field: 'telephone', title: '联系方式', width: '15%'},
                 {field: 'email', title: '邮箱', width: '15%'},
                 {title: '操作', minWidth: 150, toolbar: '#currentTableBar', align: "center"}
@@ -99,21 +92,10 @@
 
         // 监听搜索操作
         form.on('submit(data-search-btn)', function (data) {
-            //var result = JSON.stringify(data.field);
-            // layer.alert(result, {
-            //     title: '最终的搜索信息'
-            // });
-            var result = data.field;
-            //执行搜索重载
-            table.reload('currentTableId', {
-                page: {
-                    curr: 1
-                }
-                , where: {
-                    std_name: result.std_name,
-                    class_name: result.class_name
-                }
-            }, 'data');
+            var result = JSON.stringify(data.field);
+            layer.alert(result, {
+                title: '最终的搜索信息'
+            });
 
             return false;
         });
@@ -124,13 +106,13 @@
         table.on('toolbar(currentTableFilter)', function (obj) {
             if (obj.event === 'add') {  // 监听添加操作
                 var index = layer.open({
-                    title: '添加学生',
+                    title: '添加教师',
                     type: 2,
                     shade: 0.2,
                     maxmin: true,
                     shadeClose: true,
                     area: ['100%', '100%'],
-                    content: '../page/table/student_add.html',
+                    content: '../page/table/teacher_add.html',
                 });
                 $(window).on("resize", function () {
                     layer.full(index);
@@ -152,15 +134,15 @@
             if (obj.event === 'edit') {
                 // 将数据保存到 sessionStorage 中
                 //console.log(obj.data)
-                sessionStorage.setItem('editingStudent', JSON.stringify(data));
+                sessionStorage.setItem('editingTeacher', JSON.stringify(data));
                 var index = layer.open({
-                    title: '编辑用户',
+                    title: '编辑教师信息',
                     type: 2,
                     shade: 0.2,
                     maxmin: true,
                     shadeClose: true,
                     area: ['100%', '100%'],
-                    content: '../page/table/student_edit.html',
+                    content: '../page/table/teacher_edit.html',
                 });
                 $(window).on("resize", function () {
                     layer.full(index);
@@ -169,7 +151,7 @@
             } else if (obj.event === 'delete') {
                 layer.confirm('真的删除行么', function (index) {
                     $.ajax({
-                        url: '/admin/students/'+data.stu_id,
+                        url: '/admin/teachers/'+data.tea_id,
                         type: 'DELETE',
                         contentType: 'application/json',
                         dataType: 'json',
@@ -183,26 +165,26 @@
                                     parent.layer.close(iframeIndex);
                                 });
                             } else
-                                var index = layer.alert('添加失败!' + data.msg);
+                                layer.alert('删除失败!' + data.msg);
                         },
                         error: function (xhr, status, error) {
                             console.log(error);
-                            $.messager.alert('错误', '加载数据出错：' + error, 'error');
+                            layer.alert('错误', '加载数据出错：' + error, 'error');
                         }
                     });
-                    obj.del();
+                    //obj.del();
                     layer.close(index);
                 });
             } else if (obj.event === 'viewCourses') {
-                sessionStorage.setItem('stu_id', JSON.stringify(data.stu_id));
+                sessionStorage.setItem('tea_id', JSON.stringify(data.tea_id));
                 var index = layer.open({
-                    title: data.name + '的课表',
+                    title: data.name + '所教授课程列表',
                     type: 2,
                     shade: 0.2,
                     maxmin: true,
                     shadeClose: true,
                     area: ['100%', '100%'],
-                    content: '../page/table/student_courses.html',
+                    content: '../page/table/teacher_courses.html',
                     success: function (layero, index) {
                         // 获取标题元素
                         var title = layero.find('.layui-layer-title');

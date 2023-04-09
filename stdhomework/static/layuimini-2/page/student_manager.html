@@ -154,7 +154,7 @@
                 //console.log(obj.data)
                 sessionStorage.setItem('editingStudent', JSON.stringify(data));
                 var index = layer.open({
-                    title: '编辑用户',
+                    title: '编辑学生信息',
                     type: 2,
                     shade: 0.2,
                     maxmin: true,
@@ -183,11 +183,11 @@
                                     parent.layer.close(iframeIndex);
                                 });
                             } else
-                                var index = layer.alert('添加失败!' + data.msg);
+                                var index = layer.alert('删除失败!' + data.msg);
                         },
                         error: function (xhr, status, error) {
                             console.log(error);
-                            $.messager.alert('错误', '加载数据出错：' + error, 'error');
+                            layer.alert('错误', '加载数据出错：' + error, 'error');
                         }
                     });
                     obj.del();
