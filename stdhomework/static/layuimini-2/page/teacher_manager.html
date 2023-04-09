@@ -186,7 +186,7 @@
                     layer.close(index);
                 });
             } else if (obj.event === 'viewCourses') {
-                sessionStorage.setItem('tea_id', JSON.stringify(data.tea_id));
+                sessionStorage.setItem('tea_info', JSON.stringify(data));
                 var index = layer.open({
                     title: data.name + '所教授课程列表',
                     type: 2,

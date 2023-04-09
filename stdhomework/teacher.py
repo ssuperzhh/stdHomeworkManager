@@ -17,7 +17,7 @@ def get_teacher_courses(tea_id):
     cursor = db.cursor()
 
     # 使用指定的 tea_id 查询教师课表
-    cursor.execute(f'SELECT courseinfo.course_id, courseinfo.course_name'
+    cursor.execute(f'SELECT courseinfo.*'
                    f' FROM courseinfo WHERE tea_id = "{tea_id}"')
 
     # 获取查询结果

@@ -17,7 +17,7 @@ def get_student_courses(stu_id):
     cursor = db.cursor()
 
     # 使用指定的 stu_id 查询学生信息
-    cursor.execute(f'SELECT A.course_id, A.course_name, B.name tea_name '
+    cursor.execute(f'SELECT A.*, B.name tea_name '
                    f'FROM courseinfo A '
                    f'INNER JOIN teacherinfo B ON A.tea_id = B.tea_id '
                    f'INNER JOIN student_course C ON A.course_id = C.course_id '
@@ -35,6 +35,52 @@ def get_student_courses(stu_id):
 
     # 返回查询结果
     return jsonify({'code': 0, "msg": "", "count": len(student_courses), 'data': student_courses})
+
+
+# 学生选课
+@bp.route('courses/choose', methods=['POST'])
+def choose_course():
+    db = get_db()
+    cursor = db.cursor()
+    stu_id = request.json['stu_id']
+    course_id = request.json['course_id']
+    try:
+        if stu_id and course_id:
+            cursor.execute(f'INSERT INTO student_course(course_id,student_id) VALUES ({course_id},"{stu_id}")')
+            db.commit()
+            cursor.close()
+            return jsonify({'code': 201, 'msg': f'添加成功'})
+        else:
+            return jsonify({'code': 500, 'msg': f'学号或课程号为空，无法添加'})
+    except Exception as e:
+        # 如果出现异常，回滚并关闭游标
+        db.rollback()
+        cursor.close()
+        # 返回错误信息
+        return jsonify({'code': 500, 'msg': str(e)})
+
+
+# 学生退选课
+@bp.route('courses/unchoose', methods=['DELETE'])
+def unChoose_course():
+    db = get_db()
+    cursor = db.cursor()
+    stu_id = request.json['stu_id']
+    course_id = request.json['course_id']
+    try:
+        if stu_id and course_id:
+            cursor.execute(f'DELETE FROM student_course WHERE student_id="{stu_id}" AND course_id={course_id}')
+            db.commit()
+            cursor.close()
+            return jsonify({'code': 201, 'msg': f'退选成功'})
+        else:
+            return jsonify({'code': 500, 'msg': f'您未选这门课'})
+    except Exception as e:
+        # 如果出现异常，回滚并关闭游标
+        db.rollback()
+        cursor.close()
+        # 返回错误信息
+        return jsonify({'code': 500, 'msg': str(e)})
 
 
 # 查看学生课程作业列表
@@ -55,7 +101,6 @@ def get_student_courses_homeworks(stu_id, course_id):
 
     # 获取查询结果
     student_courses_homeworks = cursor.fetchall()
-
     # 关闭游标
     cursor.close()
 

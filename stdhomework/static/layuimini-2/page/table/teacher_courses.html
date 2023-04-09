@@ -19,13 +19,10 @@
 <script type="text/html" id="toolbarDemo">
     <div class="layui-btn-container">
         <button class="layui-btn layui-btn-normal layui-btn-sm data-add-btn" lay-event="add"> 添加</button>
-        <button class="layui-btn layui-btn-sm layui-btn-danger data-delete-btn" lay-event="delete"> 删除
-        </button>
     </div>
 </script>
 
 <script type="text/html" id="currentTableBar">
-    <a class="layui-btn layui-btn-normal layui-btn-xs data-count-edit" lay-event="edit">编辑</a>
     <a class="layui-btn layui-btn-xs layui-btn-danger data-count-delete" lay-event="delete">删除</a>
 </script>
 <script src="../../lib/layui-v2.6.3/layui.js" charset="utf-8"></script>
@@ -42,15 +39,16 @@
 
     layui.use('table', function () {
         var table = layui.table;
-        var tea_id = JSON.parse(sessionStorage.getItem('tea_id'));
+        var tea_id = JSON.parse(sessionStorage.getItem('tea_info')).tea_id;
         table.render({
             elem: '#teacher_courses_id',
             url: '/teacher/' + tea_id + '/courses', //数据接口,
             toolbar: '#toolbarDemo',
             page: true, //开启分页
             cols: [[ //表头
-                {field: 'course_id', title: '课程ID', width: '30%'},
-                {field: 'course_name', title: '课程名', width: '30%'},
+                {field: 'course_id', title: '课程ID', width: '20%'},
+                {field: 'course_name', title: '课程名', width: '20%'},
+                {field: 'course_introduction', title: '课程简介', width: '30%'},
                 {title: '操作', minWidth: 150, toolbar: '#currentTableBar', align: "center"}
             ]]
         });
@@ -71,34 +69,13 @@
                 $(window).on("resize", function () {
                     layer.full(index);
                 });
-            } else if (obj.event === 'delete') {  // 监听删除操作
-                var checkStatus = table.checkStatus('teacher_courses_id')
-                    , data = checkStatus.data;
-                layer.alert(JSON.stringify(data));
             }
         });
 
         table.on('tool(teacher_courses_filter)', function (obj) {
             var data = obj.data;
-            if (obj.event === 'edit') {
-                // 将数据保存到 sessionStorage 中
-                //console.log(obj.data)
-                sessionStorage.setItem('editingTeacher', JSON.stringify(data));
-                var index = layer.open({
-                    title: '编辑教师信息',
-                    type: 2,
-                    shade: 0.2,
-                    maxmin: true,
-                    shadeClose: true,
-                    area: ['100%', '100%'],
-                    content: '../page/table/teacher_edit.html',
-                });
-                $(window).on("resize", function () {
-                    layer.full(index);
-                });
-                return false;
-            } else if (obj.event === 'delete') {
-                layer.confirm('真的删除行么', function (index) {
+            if (obj.event === 'delete') {
+                layer.confirm('真的删除这行么', function (index) {
                     $.ajax({
                         url: '/admin/courses/' + data.course_id,
                         type: 'DELETE',

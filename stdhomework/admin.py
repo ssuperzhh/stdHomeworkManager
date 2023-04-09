@@ -405,18 +405,13 @@ def get_courses():
     db = get_db()
     # 创建一个 cursor 对象
     cursor = db.cursor()
-
     # 查询所有的课程信息
-    cursor.execute('SELECT * FROM courseinfo')
-
+    cursor.execute('SELECT A.*,B.name tea_name FROM courseinfo A INNER JOIN teacherinfo B ON A.tea_id=B.tea_id')
     # 获取查询结果
     courses = cursor.fetchall()
-
     # 关闭游标
     cursor.close()
-
-    # 将查询结果转换为字典格式，并返回
-    return jsonify({'courses': [dict(course) for course in courses]}), 200
+    return jsonify({'code': 0, "msg": "", "count": len(courses), 'data': courses})
 
 
 # 定义获取指定课程下的学生信息的 API

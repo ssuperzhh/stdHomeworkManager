@@ -17,9 +17,22 @@
 <body>
 <div class="layui-form layuimini-form" lay-filter="course_info">
     <div class="layui-form-item">
+        <label class="layui-form-label">授课教师</label>
+        <div class="layui-input-block">
+            <input type="text" name="tea_name" value="" class="layui-input" readonly>
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">授课教师号</label>
+        <div class="layui-input-block">
+            <input type="text" name="tea_id" value="" class="layui-input" readonly>
+        </div>
+    </div>
+    <div class="layui-form-item">
         <label class="layui-form-label required">课程号</label>
         <div class="layui-input-block">
-            <input type="text" name="course_id" lay-verify="required" lay-reqtext="课程号不能为空" placeholder="请输入课程号" value="" class="layui-input">
+            <input type="text" name="course_id" lay-verify="required" lay-reqtext="课程号不能为空"
+                   placeholder="请输入课程号" value="" class="layui-input">
             <tip>填写课程号</tip>
         </div>
     </div>
@@ -27,28 +40,24 @@
     <div class="layui-form-item">
         <label class="layui-form-label required">课程名</label>
         <div class="layui-input-block">
-            <input type="text" name="course_name" lay-verify="required" lay-reqtext="课程名不能为空" placeholder="请输入课程名" value="" class="layui-input">
-        </div>
-    </div>
-        <div class="layui-form-item">
-        <label class="layui-form-label">课程状态</label>
-        <div class="layui-input-block">
-            <input type="text" name="state" lay-verify="required" lay-reqtext="课程状态不能为空" value="" class="layui-input">
+            <input type="text" name="course_name" lay-verify="required" lay-reqtext="课程名不能为空"
+                   placeholder="请输入课程名" value="" class="layui-input">
         </div>
     </div>
     <div class="layui-form-item">
-        <label class="layui-form-label">授课教师号</label>
+        <label class="layui-form-label">课程状态</label>
         <div class="layui-input-block">
-            <input type="text" name="tea_id" placeholder="请输入授课教师号" lay-reqtext="授课教师不能为空" value="" class="layui-input" readonly>
+            <input type="text" name="state" lay-verify="required" lay-reqtext="课程状态不能为空" value=""
+                   class="layui-input">
         </div>
     </div>
     <div class="layui-form-item">
         <label class="layui-form-label">课程介绍</label>
         <div class="layui-input-block">
-        <textarea name="course_introduction" required lay-verify="required" placeholder="请输入" class="layui-textarea"></textarea>
+            <textarea name="course_introduction" required lay-verify="required" placeholder="请输入"
+                      class="layui-textarea"></textarea>
         </div>
     </div>
-
     <div class="layui-form-item">
         <div class="layui-input-block">
             <button class="layui-btn layui-btn-normal" lay-submit lay-filter="saveBtn">确认保存</button>
@@ -62,38 +71,38 @@
         var form = layui.form,
             layer = layui.layer,
             $ = layui.$;
-        var tea_id = JSON.parse(sessionStorage.getItem('tea_id'));
+        var tea_name = JSON.parse(sessionStorage.getItem('tea_info')).name;
+        var tea_id = JSON.parse(sessionStorage.getItem('tea_info')).tea_id;
         //监听提交
         form.val("course_info", {
-                "tea_id": tea_id // "name": "value"
-            });
+            "tea_name": tea_name, // "name": "value"
+            "tea_id": tea_id // "name": "value"
+        });
         form.on('submit(saveBtn)', function (data) {
             var param = JSON.stringify(data.field)
             $.ajax({
-            url: '/admin/courses',
-            type: 'POST',
-            contentType: 'application/json',
-            data:param,
-            dataType: 'json',
-            success: function (data) {
-                if(data.code == '201')
-                {
-                    var index = layer.alert('添加成功!', function () {
-                    // 关闭弹出层
-                    layer.close(index);
-                    var iframeIndex = parent.layer.getFrameIndex(window.name);
-                    parent.reloadTable();
-                    parent.layer.close(iframeIndex);
-                    });
+                url: '/admin/courses',
+                type: 'POST',
+                contentType: 'application/json',
+                data: param,
+                dataType: 'json',
+                success: function (data) {
+                    if (data.code == '201') {
+                        var index = layer.alert('添加成功!', function () {
+                            // 关闭弹出层
+                            layer.close(index);
+                            var iframeIndex = parent.layer.getFrameIndex(window.name);
+                            parent.reloadTable();
+                            parent.layer.close(iframeIndex);
+                        });
+                    } else
+                        var index = layer.alert('添加失败!' + data.msg);
+                },
+                error: function (xhr, status, error) {
+                    console.log(error);
+                    layer.alert('错误', '加载数据出错：' + error, 'error');
                 }
-                else
-                    var index = layer.alert('添加失败!'+data.msg);
-            },
-            error: function (xhr, status, error) {
-                console.log(error);
-                layer.alert('错误', '加载数据出错：' + error, 'error');
-            }
-        });
+            });
 
             return false;
         });
