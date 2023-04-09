@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>layui</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="../../lib/layui-v2.6.3/css/layui.css" media="all">
+    <link rel="stylesheet" href="../../css/public.css" media="all">
+</head>
+<body>
+<div class="layuimini-container">
+    <div class="layuimini-main">
+        <table id="student_courses" lay-filter="student_courses"></table>
+    </div>
+</div>
+<script src="../../lib/layui-v2.6.3/layui.js" charset="utf-8"></script>
+<script>
+    layui.use('table', function () {
+        var table = layui.table;
+        var stu_id = JSON.parse(sessionStorage.getItem('stu_id'));
+        table.render({
+            elem: '#student_courses',
+            url: '/student/'+stu_id+'/courses', //数据接口,
+            page: true, //开启分页
+            cols: [[ //表头
+                {field: 'course_id', title: '课程ID', width: '30%'},
+                {field: 'course_name', title: '课程名', width: '30%'},
+                {field: 'tea_name', title: '授课教师', width: '30%'}
+            ]]
+        });
+
+    });
+</script>
+
+</body>
+</html>

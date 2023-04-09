@@ -17,9 +17,11 @@ def get_student_courses(stu_id):
     cursor = db.cursor()
 
     # 使用指定的 stu_id 查询学生信息
-    cursor.execute(f'SELECT courseinfo.course_id, courseinfo.course_name'
-                   f' FROM courseinfo INNER JOIN student_course ON courseinfo.course_id = student_course.course_id '
-                   f'WHERE student_course.student_id = "{stu_id}"')
+    cursor.execute(f'SELECT A.course_id, A.course_name, B.name tea_name '
+                   f'FROM courseinfo A '
+                   f'INNER JOIN teacherinfo B ON A.tea_id = B.tea_id '
+                   f'INNER JOIN student_course C ON A.course_id = C.course_id '
+                   f'WHERE C.student_id = "{stu_id}"')
 
     # 获取查询结果
     student_courses = cursor.fetchall()
@@ -27,12 +29,12 @@ def get_student_courses(stu_id):
     # 关闭游标
     cursor.close()
 
-    # 如果查询结果为空，则返回 404 错误
-    if not student_courses:
-        return jsonify({'error': f'未找到 ID 为 {stu_id} 的学生的课表信息'}), 404
+    # 没有查询到任何学生记录，返回 404 错误响应
+    if len(student_courses) == 0:
+        return jsonify({'code': 404, 'msg': '未找到该学生下的课表信息'})
 
     # 返回查询结果
-    return jsonify({'student_courses': student_courses}), 200
+    return jsonify({'code': 0, "msg": "", "count": len(student_courses), 'data': student_courses})
 
 
 # 查看学生课程作业列表

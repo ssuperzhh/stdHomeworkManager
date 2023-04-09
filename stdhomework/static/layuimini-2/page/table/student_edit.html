@@ -15,7 +15,7 @@
     </style>
 </head>
 <body>
-<div class="layui-form layuimini-form">
+<div class="layui-form layuimini-form" lay-filter="student_info">
     <div class="layui-form-item">
         <label class="layui-form-label required">学号</label>
         <div class="layui-input-block">
@@ -62,25 +62,30 @@
 </div>
 <script src="../../lib/layui-v2.6.3/layui.js" charset="utf-8"></script>
 <script>
-    var dataString = sessionStorage.getItem('editingStudent');
-    console.log(dataString);
-    if (dataString) {
-        var dataObj = JSON.parse(dataString);
-        // 填充表单数据
-        document.getElementById("stu_id").value = dataObj.stu_id;
-        document.getElementById("name").value = dataObj.name;
-        document.getElementById("class_name").value = dataObj.class_name;
-        document.getElementById("email").value = dataObj.email;
-        document.getElementById("telephone").value = dataObj.telephone;
-
-        // 清除 sessionStorage 中保存的数据
-        sessionStorage.removeItem('editingStudent');
-    }
 
     layui.use(['form'], function () {
         var form = layui.form,
             layer = layui.layer,
             $ = layui.$;
+        var dataString = sessionStorage.getItem('editingStudent');
+        if (dataString) {
+            var dataObj = JSON.parse(dataString);
+            // 填充表单数据
+            // document.getElementById("stu_id").value = dataObj.stu_id;
+            // document.getElementById("name").value = dataObj.name;
+            // document.getElementById("class_name").value = dataObj.class_name;
+            // document.getElementById("email").value = dataObj.email;
+            // document.getElementById("telephone").value = dataObj.telephone;
+            form.val("student_info", {
+                "stu_id": dataObj.stu_id // "name": "value"
+                , "name": dataObj.name
+                , "class_name": dataObj.class_name
+                , "email": dataObj.email
+                , "telephone": dataObj.telephone
+            });
+            // 清除 sessionStorage 中保存的数据
+            sessionStorage.removeItem('editingStudent');
+        }
 
         //监听提交
         form.on('submit(saveBtn)', function (data) {
