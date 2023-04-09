@@ -24,19 +24,19 @@
             {
               "title": "教师管理",
               "href": "page/teacher_manager.html",
-              "icon": "fa fa-tachometer",
+              "icon": "fa fa-users",
               "target": "_self"
             },
             {
               "title": "学生管理",
               "href": "page/student_manager.html",
-              "icon": "fa fa-tachometer",
+              "icon": "fa fa-users",
               "target": "_self"
             },
             {
               "title": "用户账号信息管理",
               "href": "page/user_manager.html",
-              "icon": "fa fa-tachometer",
+              "icon": "fa fa-info",
               "target": "_self"
             }
           ]

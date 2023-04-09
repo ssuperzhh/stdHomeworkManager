@@ -270,16 +270,25 @@ def get_teacher():
     db = get_db()
     # 创建一个 cursor 对象
     cursor = db.cursor()
+    tea_name = request.args.get('tea_name')
 
-    # 使用指定的 stu_id 查询学生信息
-    cursor.execute(f'SELECT * FROM teacherinfo')
+    # 构建 SQL 查询语句
+    conditions = []
+    if tea_name:
+        conditions.append(f"name = '{tea_name}'")
+
+    if conditions:
+        # 有查询条件，按条件查询学生信息
+        where_clause = " AND ".join(conditions)  # 使用 AND 连接列表中的每一个元素
+        sql = f"SELECT * FROM teacherinfo WHERE {where_clause}"
+        cursor.execute(sql)
+    else:
+        cursor.execute(f'SELECT * FROM teacherinfo')
 
     # 获取查询结果
     teachers = cursor.fetchall()
-
     # 关闭游标
     cursor.close()
-
     # 如果查询结果为空，则返回 404 错误
     if not teachers:
         return jsonify({'code': 404, 'msg': '未找到任何教师信息'})
