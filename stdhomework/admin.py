@@ -14,6 +14,131 @@ def index():
     return render_template('admin/index.html')
 
 
+# 定义获取用户信息的 API,可通过用户的身份或者姓名查看
+@bp.route('/users', methods=['GET'])
+def get_users():
+    db = get_db()
+    # 创建一个 cursor 对象
+    cursor = db.cursor()
+
+    user_name = request.args.get('user_name')
+    identity = request.args.get('identity')
+
+    # 构建 SQL 查询语句
+    conditions = []
+    if user_name:
+        conditions.append(f"name = '{user_name}'")
+    if identity:
+        conditions.append(f"identity = '{identity}'")
+
+    if conditions:
+        where_clause = " AND ".join(conditions)  # 使用 AND 连接列表中的每一个元素
+        sql = f"SELECT * FROM user WHERE {where_clause}"
+    else:
+        sql = "SELECT * FROM user"
+    # 执行 SQL 查询语句
+    cursor.execute(sql)
+    # 获取查询结果
+    users = cursor.fetchall()
+    # 关闭游标
+    cursor.close()
+    if len(users) == 0:
+        return jsonify({'code': 404, 'msg': '未找到任何用户信息'})
+    # 返回查询结果
+    return jsonify({'code': 0, "msg": "", "count": len(users), 'data': users})
+
+
+@bp.route('/users', methods=['POST'])
+def add_user():
+    try:
+        user_name = request.json['user_name']
+        password = request.json['password']
+        email = request.json['email']
+        identity = request.json['identity']
+        create_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
+        db = get_db()
+        # 创建一个 cursor 对象
+        cursor = db.cursor()
+        cursor.execute(f'INSERT INTO user (name, password, email, identity, create_time) VALUES '
+                       f'("{user_name}", "{password}", "{email}", "{identity}", "{create_time}")')
+
+        # 提交更改并关闭游标
+        db.commit()
+        cursor.close()
+
+        # 返回成功信息
+        return jsonify({'code': 201, 'msg': '用户信息添加成功'})
+    except Exception as e:
+        # 如果出现异常，回滚并关闭游标
+        db.rollback()
+        cursor.close()
+
+        # 返回错误信息
+        return jsonify({'code': 500, 'msg': str(e)})
+
+@bp.route('/users/<int:user_id>', methods=['PUT'])
+def update_user(user_id):
+    db = get_db()
+    # 创建一个 cursor 对象
+    cursor = db.cursor()
+
+    # 查询指定的学生信息是否存在
+    cursor.execute(f'SELECT * FROM user WHERE id = "{user_id}"')
+    user = cursor.fetchone()
+
+    # 如果学生信息不存在，则返回 404 错误
+    if not user:
+        return jsonify({'code': 404, 'msg': f'未找到 ID 为 {user_id} 的用户信息'})
+
+    # 更新用户
+    # 获取 POST 请求上传的数据
+    user_id = request.json.get('user_id', user['id'])
+    user_name = request.json.get('user_name', user['name'])
+    password = request.json.get('password', user['password'])
+    email = request.json.get('email', user['email'])
+    identity = request.json.get('identity', user['identity'])
+    create_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    cursor.execute(
+        f'UPDATE user SET name = "{user_name}", password = "{password}", email = "{email}", identity = "{identity}", create_time = "{create_time}"'
+        f' WHERE id = "{user_id}"')
+
+    # 提交更改并关闭游标
+    db.commit()
+    cursor.close()
+
+    # 返回成功信息
+    return jsonify({'code': 200, 'msg': f'ID 为 {user_id} 的用户信息已更新'})
+
+
+# 定义删除学生信息的 API
+@bp.route('/users/<int:user_id>', methods=['DELETE'])
+def delete_user(user_id):
+    db = get_db()
+    # 创建一个 cursor 对象
+    cursor = db.cursor()
+
+    # 使用指定的 stu_id 查询学生信息
+    cursor.execute(f'SELECT * FROM user WHERE id = "{user_id}"')
+
+    # 获取查询结果
+    student = cursor.fetchone()
+
+    # 如果查询结果为空，则返回 404 错误
+    if not student:
+        return jsonify({'code': 404, 'msg': f'未找到 ID 为 {user_id} 的用户信息'})
+
+    # 删除用户信息
+    cursor.execute(f'DELETE FROM user WHERE id = "{user_id}"')
+
+    # 提交更改并关闭游标
+    db.commit()
+    cursor.close()
+
+    # 返回成功信息
+    return jsonify({'code': 200, 'msg': f'ID 为 {user_id} 的用户信息已删除'})
+
+
 # 获取 system_notice 表中所有的数据
 @bp.route('/system_notice', methods=['GET'])
 def get_system_notice():
@@ -261,7 +386,7 @@ def delete_student(stu_id):
     cursor.close()
 
     # 返回成功信息
-    return jsonify({'code': 200, 'msg': f'ID 为 {stu_id} 的学生信息已删除'}), 200
+    return jsonify({'code': 200, 'msg': f'ID 为 {stu_id} 的学生信息已删除'})
 
 
 # 定义获取教师信息列表的 API
