@@ -72,28 +72,29 @@
         var form = layui.form,
             layer = layui.layer,
             $ = layui.$;
-        var tea_name = JSON.parse(sessionStorage.getItem('tea_info')).name;
-        var tea_id = JSON.parse(sessionStorage.getItem('tea_info')).tea_id;
-        if (window.parent.document.title == '教师课程') {
-            $('input[name="tea_name"]').attr('readonly', true);
-            $('input[name="tea_id"]').attr('readonly', true);
+        var course = JSON.parse(sessionStorage.getItem('course'));
+        if (window.parent.document.title == '课程管理') {
             form.val("course_info", {
-                "tea_name": tea_name, // "name": "value"
-                "tea_id": tea_id // "name": "value"
+                "tea_id":course.tea_id,
+                "tea_name": course.tea_name,
+                "course_id": course.course_id,
+                "course_name": course.course_name,
+                "state": course.state,
+                "course_introduction": course.course_introduction
             });
         }
 
         form.on('submit(saveBtn)', function (data) {
             var param = JSON.stringify(data.field)
             $.ajax({
-                url: '/admin/courses',
-                type: 'POST',
+                url: '/admin/courses/'+data.field.course_id,
+                type: 'PUT',
                 contentType: 'application/json',
                 data: param,
                 dataType: 'json',
                 success: function (data) {
-                    if (data.code == '201') {
-                        var index = layer.alert('添加成功!', function () {
+                    if (data.code == '200') {
+                        var index = layer.alert('更新成功!', function () {
                             // 关闭弹出层
                             layer.close(index);
                             var iframeIndex = parent.layer.getFrameIndex(window.name);
@@ -101,7 +102,7 @@
                             parent.layer.close(iframeIndex);
                         });
                     } else
-                        var index = layer.alert('添加失败!' + data.msg);
+                        var index = layer.alert('更新失败!' + data.msg);
                 },
                 error: function (xhr, status, error) {
                     console.log(error);

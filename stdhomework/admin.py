@@ -11,7 +11,7 @@ bp = Blueprint('admin', __name__, url_prefix='/admin')
 
 @bp.route('/')
 def index():
-    return render_template('admin/index.html')
+    return render_template('admin/admin_index.html')
 
 
 # 定义获取用户信息的 API,可通过用户的身份或者姓名查看
@@ -77,17 +77,18 @@ def add_user():
         # 返回错误信息
         return jsonify({'code': 500, 'msg': str(e)})
 
+
 @bp.route('/users/<int:user_id>', methods=['PUT'])
 def update_user(user_id):
     db = get_db()
     # 创建一个 cursor 对象
     cursor = db.cursor()
 
-    # 查询指定的学生信息是否存在
+    # 查询指定的用户信息是否存在
     cursor.execute(f'SELECT * FROM user WHERE id = "{user_id}"')
     user = cursor.fetchone()
 
-    # 如果学生信息不存在，则返回 404 错误
+    # 如果用户信息不存在，则返回 404 错误
     if not user:
         return jsonify({'code': 404, 'msg': f'未找到 ID 为 {user_id} 的用户信息'})
 
@@ -145,27 +146,31 @@ def get_system_notice():
     db = get_db()
     # 创建一个 cursor 对象
     cursor = db.cursor()
-    cursor.execute("SELECT * FROM system_notice")
-    result = cursor.fetchall()
-    # print(result)
-    if not result:
-        return jsonify({'error': '未找到系统通知'}), 404
-    return jsonify({"system_notice": result}), 200
 
+    admin_name = request.args.get('admin_name')
 
-# 根据 id 获取 system_notice 表中的数据
-@bp.route('/system_notice/<int:id>', methods=['GET'])
-def get_system_notice_by_id(id):
-    db = get_db()
-    # 创建一个 cursor 对象
-    cursor = db.cursor()
-    cursor.execute("SELECT * FROM system_notice WHERE id = %s", (id,))
-    result = cursor.fetchone()
-    print(result)
-    if not result:
-        return jsonify({'error': '未找到指定的系统通知'}), 404
-    return jsonify({'id': result['id'], 'title': result['title'], 'content': result['content'],
-                    'create_time': result['create_time'], 'admin_id': result['admin_id']}), 200
+    # 构建 SQL 查询语句
+    conditions = []
+    if admin_name:
+        conditions.append(f"name = '{admin_name}'")
+
+    if conditions:
+        # 有查询条件，按条件查询学生信息
+        where_clause = " AND ".join(conditions)  # 使用 AND 连接列表中的每一个元素
+        sql = f"SELECT A.*,B.name admin_name FROM system_notice A INNER JOIN admininfo B ON A.admin_id=B.id " \
+              f"WHERE {where_clause} "
+        cursor.execute(sql)
+        system_notice = cursor.fetchall()
+    else:
+        cursor.execute("SELECT A.*,B.name admin_name FROM system_notice A INNER JOIN admininfo B ON A.admin_id=B.id")
+        system_notice = cursor.fetchall()
+
+    # 没有查询到任何学生记录，返回 404 错误响应
+    if len(system_notice) == 0:
+        return jsonify({'code': 404, 'msg': '未找到任何学生信息'})
+
+    # 返回查询结果
+    return jsonify({'code': 0, "msg": "", "count": len(system_notice), 'data': system_notice})
 
 
 # 向 system_notice 表中插入数据
@@ -183,12 +188,19 @@ def create_system_notice():
     db = get_db()
     # 创建一个 cursor 对象
     cursor = db.cursor()
-    cursor.execute("INSERT INTO system_notice (title, content, create_time, admin_id) VALUES (%s, %s, %s, %s)",
-                   (title, content, create_time, admin_id))
-    db.commit()
+    try:
+        cursor.execute("INSERT INTO system_notice (title, content, create_time, admin_id) VALUES (%s, %s, %s, %s)",
+                       (title, content, create_time, admin_id))
+        db.commit()
+        # 返回成功信息
+        return jsonify({'code': 201, 'msg': '系统通知添加成功'})
 
-    # 返回信息
-    return jsonify({'message': '系统通知创建成功'}), 201
+    except Exception as e:
+        # 如果出现异常，回滚并关闭游标
+        db.rollback()
+        cursor.close()
+        # 返回错误信息
+        return jsonify({'code': 500, 'msg': str(e)})
 
 
 # 根据 id 更新 system_notice 表中的数据
@@ -212,7 +224,8 @@ def update_system_notice(id):
     db.commit()
 
     # 返回信息
-    return jsonify({'message': '系统通知更新成功'}), 200
+    # 返回成功信息
+    return jsonify({'code': 200, 'msg': f' ID{id}的通知已更新'})
 
 
 # 根据 id 删除 system_notice 表中的数据
@@ -225,8 +238,7 @@ def delete_system_notice(id):
     cursor.execute("DELETE FROM system_notice WHERE id = %s", (id,))
     db.commit()
 
-    # 返回信息
-    return jsonify({'message': '系统通知删除成功'}), 200
+    return jsonify({'code': 200, 'msg': f'ID 为 {id} 的信息已删除'})
 
 
 # 定义获取学生信息的 API,可通过学生的姓名和班级查看
@@ -530,10 +542,22 @@ def get_courses():
     db = get_db()
     # 创建一个 cursor 对象
     cursor = db.cursor()
-    # 查询所有的课程信息
-    cursor.execute('SELECT A.*,B.name tea_name FROM courseinfo A INNER JOIN teacherinfo B ON A.tea_id=B.tea_id')
-    # 获取查询结果
-    courses = cursor.fetchall()
+    course_name = request.args.get('course_name')
+    # 构建 SQL 查询语句
+    conditions = []
+    if course_name:
+        conditions.append(f"course_name = '{course_name}'")
+    if conditions:
+        # 有查询条件，按条件查询学生信息
+        where_clause = " AND ".join(conditions)  # 使用 AND 连接列表中的每一个元素
+        sql = f"SELECT A.*,B.name tea_name FROM courseinfo A INNER JOIN teacherinfo B ON A.tea_id=B.tea_id WHERE {where_clause}"
+        cursor.execute(sql)
+        courses = cursor.fetchall()
+    else:
+        # 查询所有的课程信息
+        cursor.execute('SELECT A.*,B.name tea_name FROM courseinfo A INNER JOIN teacherinfo B ON A.tea_id=B.tea_id')
+        # 获取查询结果
+        courses = cursor.fetchall()
     # 关闭游标
     cursor.close()
     return jsonify({'code': 0, "msg": "", "count": len(courses), 'data': courses})
@@ -588,11 +612,10 @@ def add_course():
         # 提交更改并关闭游标
         db.commit()
         cursor.close()
+        # 返回成功信息
+        return jsonify({'code': 201, 'msg': '课程信息添加成功'})
     except Exception as e:
         return jsonify({'code': 500, 'msg': str(e)})
-
-    # 返回成功信息
-    return jsonify({'code': 201, 'msg': '课程信息添加成功'})
 
 
 # 定义更新课程信息的 API
@@ -608,7 +631,7 @@ def update_course(course_id):
 
     # 如果课程信息不存在，则返回 404 错误
     if not course:
-        return jsonify({'error': f'未找到 ID 为 {course_id} 的课程信息'}), 404
+        return jsonify({'code': 404, 'msg': f'未找到 ID 为 {course_id} 的课程信息'})
 
     # 更新课程信息
     course_name = request.json.get('course_name', course['course_name'])
@@ -619,15 +642,12 @@ def update_course(course_id):
     try:
         cursor.execute(
             f'UPDATE courseinfo SET course_name = "{course_name}", course_introduction = "{course_introduction}", state = "{state}", tea_id = "{tea_id}" WHERE course_id = "{course_id}"')
-
         # 提交更改并关闭游标
         db.commit()
         cursor.close()
-    except db.IntegrityError:
-        return jsonify({'message': '教师不存在,无法更新该课程信息'}), 400
-
-    # 返回成功信息
-    return jsonify({'message': f'ID 为 {course_id} 的课程信息已更新'}), 200
+        return jsonify({'code': 200, 'msg': '课程信息添加成功'})
+    except Exception as e:
+        return jsonify({'code': 500, 'msg': str(e)})
 
 
 # 定义删除课程信息的 API
@@ -637,10 +657,8 @@ def delete_course(course_id):
         db = get_db()
         # 创建一个 cursor 对象
         cursor = db.cursor()
-
         # 使用指定的 course_id 查询课程信息
         cursor.execute(f'SELECT * FROM courseinfo WHERE course_id = "{course_id}"')
-
         # 获取查询结果
         course = cursor.fetchone()
 
