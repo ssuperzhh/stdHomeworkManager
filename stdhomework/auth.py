@@ -58,21 +58,23 @@ def login():
     data = request.get_json()
 
     # 从 JSON 数据中获取用户名和密码
-    username = data['name']
+    username = data['username']
     password = data['password']
+    identity = data['identity']
 
     # 检查用户名和密码是否匹配
     db = get_db()
     cursor = db.cursor()
-    cursor.execute("SELECT * FROM user WHERE name=%s AND password=%s", (username, password))
+    cursor.execute("SELECT * FROM user WHERE name=%s AND password=%s AND identity=%s", (username, password, identity))
     result = cursor.fetchone()
     if not result:
-        return jsonify({'error': '用户名或密码错误'}), 400
+        return jsonify({'code': 500, 'msg': '用户名或密码或身份错误'})
 
     # 将用户的 ID 存入 session
     session['user_id'] = result['id']
     # 返回成功登录的信息
-    return jsonify({'message': '登录成功'}), 200
+    return jsonify({'code': 200, 'msg': '登录成功'})
+
 
 # 登出接口
 @bp.route('/logout', methods=['POST'])
@@ -81,7 +83,6 @@ def logout():
     session.pop('user_id', None)
 
     return jsonify({'message': '退出成功'}), 200
-
 
 #
 # @bp.route('/register', methods=('GET', 'POST'))
