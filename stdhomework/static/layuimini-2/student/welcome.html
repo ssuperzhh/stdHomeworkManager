@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<h1 align="center"> Hello <span id="nav-username"></span></h1>
+<script>
+    // 获取保存在 sessionStorage 中的用户名
+    const username = sessionStorage.getItem('username');
+    // 将用户名插入到目标元素中
+    document.getElementById('nav-username').textContent = username+'!';
+</script>
+</body>
+</html>

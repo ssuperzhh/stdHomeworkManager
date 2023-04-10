@@ -72,6 +72,7 @@ def login():
 
     # 将用户的 ID 存入 session
     session['user_id'] = result['id']
+    session['identity'] = result['identity']
     # 返回成功登录的信息
     return jsonify({'code': 200, 'msg': '登录成功'})
 
@@ -81,8 +82,9 @@ def login():
 def logout():
     # 删除 session 中的用户 ID
     session.pop('user_id', None)
+    session.pop('identity', None)
 
-    return jsonify({'message': '退出成功'}), 200
+    return jsonify({'code': 200, 'msg': '退出成功'})
 
 #
 # @bp.route('/register', methods=('GET', 'POST'))

@@ -389,9 +389,20 @@
                 dataType: 'json',
                 success: function (res) {
                     if (res.code == 200) {
+                        // 登录成功后，保存用户名到 sessionStorage 中
+                        sessionStorage.setItem('username', data.username);
+                        sessionStorage.setItem('password', data.password);
                         if (data.identity == 'admin') {
                             layer.msg('登录成功', function () {
                                 window.location = './admin_index.html';
+                            });
+                        } else if (data.identity == 'student') {
+                            layer.msg('登录成功', function () {
+                                window.location = './student_index.html';
+                            });
+                        } else if (data.identity == 'teacher') {
+                            layer.msg('登录成功', function () {
+                                window.location = './teacher_index.html';
                             });
                         }
                     } else

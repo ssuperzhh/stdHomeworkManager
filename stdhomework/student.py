@@ -10,22 +10,30 @@ bp = Blueprint('student', __name__, url_prefix='/student')
 
 
 # 查看学生课程列表
-@bp.route('<string:stu_id>/courses', methods=['GET'])
-def get_student_courses(stu_id):
+@bp.route('<string:stu_name>/courses', methods=['GET'])
+def get_student_courses(stu_name):
     db = get_db()
     # 创建一个 cursor 对象
     cursor = db.cursor()
-
-    # 使用指定的 stu_id 查询学生信息
-    cursor.execute(f'SELECT A.*, B.name tea_name '
-                   f'FROM courseinfo A '
-                   f'INNER JOIN teacherinfo B ON A.tea_id = B.tea_id '
-                   f'INNER JOIN student_course C ON A.course_id = C.course_id '
-                   f'WHERE C.student_id = "{stu_id}"')
-
-    # 获取查询结果
-    student_courses = cursor.fetchall()
-
+    course_name = request.args.get('course_name')
+    sql = (f'SELECT A.*, B.name tea_name '
+           f'FROM courseinfo A '
+           f'INNER JOIN teacherinfo B ON A.tea_id = B.tea_id '
+           f'INNER JOIN student_course C ON A.course_id = C.course_id '
+           f'INNER JOIN studentinfo D ON D.stu_id = C.student_id '
+           f'WHERE D.name = "{stu_name}"')
+    # 构建 SQL 查询语句
+    conditions = []
+    if course_name:
+        conditions.append(f"course_name = '{course_name}'")
+    if conditions:
+        where_clause = " AND ".join(conditions)  # 使用 AND 连接列表中的每一个元素
+        sql += f" AND {where_clause}"
+        cursor.execute(sql)
+        student_courses = cursor.fetchall()
+    else:
+        cursor.execute(sql)
+        student_courses = cursor.fetchall()
     # 关闭游标
     cursor.close()
 
@@ -110,3 +118,30 @@ def get_student_courses_homeworks(stu_id, course_id):
 
     # 返回查询结果
     return jsonify({'student_courses_homeworks': student_courses_homeworks}), 200
+
+
+# 定义更新学生密码
+@bp.route('/update_pwd/<string:stu_id>', methods=['PUT'])
+def update_student(stu_id):
+    db = get_db()
+    # 创建一个 cursor 对象
+    cursor = db.cursor()
+
+    cursor.execute(f'SELECT * FROM user WHERE id = "{stu_id}"')
+    student = cursor.fetchone()
+
+    # 如果学生信息不存在，则返回 404 错误
+    if not student:
+        return jsonify({'code': 404, 'msg': f'未找到 ID 为 {stu_id} 的信息'})
+
+    # 更新学生信息
+    new_password = request.json.get('new_password', student['name'])
+    cursor.execute(
+        f'UPDATE user SET password = "{new_password}" WHERE stu_id = "{stu_id}"')
+
+    # 提交更改并关闭游标
+    db.commit()
+    cursor.close()
+
+    # 返回成功信息
+    return jsonify({'code': 200, 'msg': f'ID 为 {stu_id} 的密码已更新'})

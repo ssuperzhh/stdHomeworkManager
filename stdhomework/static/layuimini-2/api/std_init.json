@@ -1,11 +1,11 @@
 {
   "homeInfo": {
     "title": "首页",
-    "href": "/static/layuimini-2/page/welcome.html?t=1"
+    "href": "/static/layuimini-2/student/welcome.html?t=1"
   },
   "logoInfo": {
-    "title": "管理员界面",
-    "image": "/static/layuimini-2/images/logo.png",
+    "title": "学生端界面",
+    "image": "/static/layuimini-2/images/college.png",
     "href": ""
   },
   "menuInfo": [
@@ -16,88 +16,22 @@
       "target": "_self",
       "child": [
         {
-          "title": "用户管理",
-          "href": "",
-          "icon": "fa fa-user",
-          "target": "_self",
-          "child": [
-            {
-              "title": "教师管理",
-              "href": "page/teacher_manager.html",
-              "icon": "fa fa-users",
-              "target": "_self"
-            },
-            {
-              "title": "学生管理",
-              "href": "page/student_manager.html",
-              "icon": "fa fa-users",
-              "target": "_self"
-            },
-            {
-              "title": "用户账号信息管理",
-              "href": "page/user_manager.html",
-              "icon": "fa fa-info",
-              "target": "_self"
-            }
-          ]
-        },
-        {
-          "title": "课程管理",
-          "href": "page/course_manager.html",
-          "icon": "fa fa-window-maximize",
-          "target": "_self"
-        },
-        {
-          "title": "系统公告管理",
-          "href": "page/system_notice_manager.html",
+          "title": "系统通知",
+          "href": "student/system_notice.html",
           "icon": "fa fa-file-text",
           "target": "_self"
         },
         {
-          "title": "系统设置",
-          "href": "page/setting.html",
-          "icon": "fa fa-gears",
+          "title": "查看课程",
+          "href": "student/my_courses.html",
+          "icon": "fa fa-table",
           "target": "_self"
         },
         {
-          "title": "登录模板",
-          "href": "",
-          "icon": "fa fa-flag-o",
-          "target": "_self",
-          "child": [
-            {
-              "title": "登录-1",
-              "href": "page/login-1.html",
-              "icon": "fa fa-stumbleupon-circle",
-              "target": "_blank"
-            },
-            {
-              "title": "登录-2",
-              "href": "page/login-2.html",
-              "icon": "fa fa-viacoin",
-              "target": "_blank"
-            },
-            {
-              "title": "登录-3",
-              "href": "page/login-3.html",
-              "icon": "fa fa-tags",
-              "target": "_blank"
-            }
-          ]
-        },
-        {
-          "title": "异常页面",
-          "href": "",
-          "icon": "fa fa-home",
-          "target": "_self",
-          "child": [
-            {
-              "title": "404页面",
-              "href": "page/404.html",
-              "icon": "fa fa-hourglass-end",
-              "target": "_self"
-            }
-          ]
+          "title": "账号设置",
+          "href": "student/setting.html",
+          "icon": "fa fa-info",
+          "target": "_self"
         }
       ]
     }
