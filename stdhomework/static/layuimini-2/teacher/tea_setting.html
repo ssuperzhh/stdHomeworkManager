@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<script src="../lib/layui-v2.6.3/layui.js" charset="utf-8"></script>
+<body>
+<script>
+    layui.use('jquery', function () {
+        var $ = layui.jquery;
+
+        $(document).ready(function () {
+            layer.alert('教师信息的修改请联系管理员！', function (index) {
+                parent.window.location.href = "../teacher_index.html";
+            });
+        });
+    });
+
+</script>
+</body>
+</html>

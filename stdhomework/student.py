@@ -127,7 +127,7 @@ def update_student(stu_id):
     # 创建一个 cursor 对象
     cursor = db.cursor()
 
-    cursor.execute(f'SELECT * FROM user WHERE id = "{stu_id}"')
+    cursor.execute(f'SELECT * FROM user WHERE identity_id = "{stu_id}"')
     student = cursor.fetchone()
 
     # 如果学生信息不存在，则返回 404 错误
@@ -137,7 +137,7 @@ def update_student(stu_id):
     # 更新学生信息
     new_password = request.json.get('new_password', student['name'])
     cursor.execute(
-        f'UPDATE user SET password = "{new_password}" WHERE stu_id = "{stu_id}"')
+        f'UPDATE user SET password = "{new_password}" WHERE identity_id = "{stu_id}"')
 
     # 提交更改并关闭游标
     db.commit()

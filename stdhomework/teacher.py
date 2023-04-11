@@ -32,3 +32,29 @@ def get_teacher_courses(tea_id):
 
     # 返回查询结果
     return jsonify({'code': 0, 'data': teacher_courses, 'msg': ""})
+
+
+# 更新密码
+@bp.route('/update_pwd/<string:tea_id>', methods=['PUT'])
+def update_teacher(tea_id):
+    db = get_db()
+    # 创建一个 cursor 对象
+    cursor = db.cursor()
+
+    cursor.execute(f'SELECT * FROM user WHERE identity_id = "{tea_id}"')
+    student = cursor.fetchone()
+
+    if not student:
+        return jsonify({'code': 404, 'msg': f'未找到 ID 为 {tea_id} 的信息'})
+
+    # 更新学生信息
+    new_password = request.json.get('new_password', student['name'])
+    cursor.execute(
+        f'UPDATE user SET password = "{new_password}" WHERE identity_id = "{tea_id}"')
+
+    # 提交更改并关闭游标
+    db.commit()
+    cursor.close()
+
+    # 返回成功信息
+    return jsonify({'code': 200, 'msg': f'ID 为 {tea_id} 的密码已更新'})

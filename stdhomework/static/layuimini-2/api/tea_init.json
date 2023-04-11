@@ -1,0 +1,53 @@
+{
+  "homeInfo": {
+    "title": "首页",
+    "href": "/static/layuimini-2/teacher/welcome.html?t=1"
+  },
+  "logoInfo": {
+    "title": "教师端界面",
+    "image": "/static/layuimini-2/images/college.png",
+    "href": ""
+  },
+  "menuInfo": [
+    {
+      "title": "常规管理",
+      "icon": "fa fa-address-book",
+      "href": "",
+      "target": "_self",
+      "child": [
+        {
+          "title": "系统通知",
+          "href": "student/system_notice.html",
+          "icon": "fa fa-file-text",
+          "target": "_self"
+        },
+        {
+          "title": "课程管理",
+          "href": "teacher/my_courses_manager.html",
+          "icon": "fa fa-table",
+          "target": "_self"
+        },
+        {
+          "title": "账号设置",
+          "href": "",
+          "icon": "fa fa-info",
+          "target": "_self",
+          "child": [
+            {
+              "title": "个人信息设置",
+              "href": "teacher/tea_setting.html",
+              "icon": "fa fa-info",
+              "target": "_self"
+            },
+            {
+              "title": "账号密码设置设置",
+              "href": "teacher/password_setting.html",
+              "icon": "fa fa-info",
+              "target": "_self"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
