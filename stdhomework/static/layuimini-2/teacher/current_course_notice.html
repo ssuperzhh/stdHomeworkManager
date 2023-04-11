@@ -45,10 +45,10 @@
             form = layui.form,
             table = layui.table;
 
-        var cur_course=JSON.parse(sessionStorage.getItem('current_course'));
+        var cur_course = JSON.parse(sessionStorage.getItem('current_course'));
         table.render({
             elem: '#currentTableId',
-            url: '/courses/course_notice/'+cur_course.course_id,
+            url: '/courses/course_notice/' + cur_course.course_id,
             toolbar: '#toolbarDemo',
             defaultToolbar: ['filter', 'exports', 'print', {
                 title: '提示',
@@ -60,7 +60,8 @@
                 {field: 'title', title: '标题', width: '20%'},
                 {field: 'content', title: '内容', width: '30%'},
                 {field: 'create_time', title: '创建时间', width: '20%'},
-                {field: 'Course_name', title: '所属课程', width: '10%'},
+                {field: 'course_name', title: '所属课程', width: '10%'},
+                {title: '操作', minWidth: 40, toolbar: '#currentTableBar', align: "center"}
             ]],
             limits: [10, 15, 20, 25, 50, 100],
             limit: 15,
@@ -102,7 +103,7 @@
                 //console.log(obj.data)
                 sessionStorage.setItem('editingCurNotice', JSON.stringify(data));
                 var index = layer.open({
-                    title: '编辑学生信息',
+                    title: '编辑课程公告',
                     type: 2,
                     shade: 0.2,
                     maxmin: true,
@@ -115,11 +116,13 @@
                 });
                 return false;
             } else if (obj.event === 'delete') {
+                console.log(data);
                 layer.confirm('真的删除行么', function (index) {
                     $.ajax({
-                        url: '/admin/students/'+data.stu_id,
+                        url: '/courses/course_notice/delete',
                         type: 'DELETE',
                         contentType: 'application/json',
+                        data:JSON.stringify({ id: data.id }),
                         dataType: 'json',
                         success: function (data) {
                             if (data.code == '200') {
@@ -135,37 +138,12 @@
                         },
                         error: function (xhr, status, error) {
                             console.log(error);
-                            layer.alert('错误', '加载数据出错：' + error, 'error');
+                            layer.alert('错误,加载数据出错：' + error);
                         }
                     });
                     obj.del();
                     layer.close(index);
                 });
-            } else if (obj.event === 'viewCourses') {
-                sessionStorage.setItem('stu_id', JSON.stringify(data.stu_id));
-                var index = layer.open({
-                    title: data.name + '的课表',
-                    type: 2,
-                    shade: 0.2,
-                    maxmin: true,
-                    shadeClose: true,
-                    area: ['100%', '100%'],
-                    content: '../page/table/student_courses.html',
-                    success: function (layero, index) {
-                        // 获取标题元素
-                        var title = layero.find('.layui-layer-title');
-                        // 修改样式
-                        title.css({
-                            'text-align': 'center',
-                            'font-size': '24px',
-                            'font-weight': 'bold',
-                        });
-                    },
-                });
-                $(window).on("resize", function () {
-                    layer.full(index);
-                });
-                return false;
             }
         });
 

@@ -15,11 +15,11 @@
     </style>
 </head>
 <body>
-<div class="layui-form layuimini-form">
+<div class="layui-form layuimini-form" lay-filter="cur_course_notice_add">
     <div class="layui-form-item">
         <label class="layui-form-label">课程id</label>
         <div class="layui-input-block">
-            <input type="text" name="course_id" value="" class="layui-input">
+            <input type="text" name="course_id" value="" class="layui-input" readonly>
         </div>
     </div>
     <div class="layui-form-item">
@@ -48,11 +48,14 @@
             var form = layui.form,
                 layer = layui.layer,
                 $ = layui.$;
+            form.val("cur_course_notice_add", {
+                "course_id": JSON.parse(sessionStorage.getItem('current_course')).course_id
+            });
             //监听提交
             form.on('submit(saveBtn)', function (data) {
                 var param = JSON.stringify(data.field)
                 $.ajax({
-                    url: '/admin/system_notice',
+                    url: '/courses/course_notice',
                     type: 'POST',
                     contentType: 'application/json',
                     data: param,
@@ -71,7 +74,7 @@
                     },
                     error: function (xhr, status, error) {
                         console.log(error);
-                        $.messager.alert('错误', '加载数据出错：' + error, 'error');
+                        layer.alert('错误,加载数据出错：' + error);
                     }
                 });
 

@@ -17,8 +17,8 @@ def get_course_notice_by_course_id(course_id):
     db = get_db()
     # 创建一个 cursor 对象
     cursor = db.cursor()
-    cursor.execute("SELECT A.*,B.course_name FROM course_noticeinfo A INNER JOIN B courseinfo "
-                   "ON A.course_id=B.course_id WHERE course_id = %s", (course_id,))
+    cursor.execute("SELECT A.*,B.course_name FROM course_noticeinfo A INNER JOIN courseinfo B "
+                   "ON A.course_id=B.course_id WHERE A.course_id = %s", (course_id,))
     result = cursor.fetchall()
     if not result:
         return jsonify({'code': 404, 'msg': '未找到该课程下的通知'})
@@ -79,7 +79,7 @@ def update_course_notice():
         db.commit()
         if result > 0:
             # 返回信息
-            return jsonify({'code': 0, 'msg': '课程通知更新成功'})
+            return jsonify({'code': 200, 'msg': '课程通知更新成功'})
 
     except Exception as e:
         # 如果出现异常，回滚并关闭游标
@@ -105,7 +105,7 @@ def delete_system_notice():
             return jsonify({'code': 200, 'msg': '课程通知删除成功'})
         else:
             return jsonify({'code': 400, 'msg': '该课程不存在或已被删除'})
-        
+
     except Exception as e:
         # 如果出现异常，回滚并关闭游标
         db.rollback()

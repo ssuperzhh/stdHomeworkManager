@@ -15,11 +15,11 @@
     </style>
 </head>
 <body>
-<div class="layui-form layuimini-form">
+<div class="layui-form layuimini-form" lay-filter="cur_course_notice_edit">
     <div class="layui-form-item">
         <label class="layui-form-label">课程id</label>
         <div class="layui-input-block">
-            <input type="text" name="course_id" value="" class="layui-input">
+            <input type="text" name="course_id" value="" class="layui-input" readonly>
         </div>
     </div>
     <div class="layui-form-item">
@@ -44,22 +44,37 @@
 </div>
 <script src="../lib/layui-v2.6.3/layui.js" charset="utf-8"></script>
 <script>
+    function reloadTable() {
+        layui.use('table', function () {
+            var table = layui.table;
+            table.reload('currentTableId');
+        });
+    }
+
     layui.use(['form'], function () {
             var form = layui.form,
                 layer = layui.layer,
                 $ = layui.$;
+            var curNotice = JSON.parse(sessionStorage.getItem('editingCurNotice'));
+            console.log(curNotice);
+            form.val("cur_course_notice_edit", {
+                "course_id": curNotice.course_id,
+                "title": curNotice.title,
+                "content": curNotice.content,
+            });
             //监听提交
             form.on('submit(saveBtn)', function (data) {
+                data.field.id = curNotice.id;//后台接口需要编辑公告的id而form中没有
                 var param = JSON.stringify(data.field)
                 $.ajax({
-                    url: '/admin/system_notice',
-                    type: 'POST',
+                    url: '/courses/course_notice/update',
+                    type: 'PUT',
                     contentType: 'application/json',
                     data: param,
                     dataType: 'json',
                     success: function (data) {
-                        if (data.code == '201') {
-                            var index = layer.alert('添加成功!', function () {
+                        if (data.code == '200') {
+                            var index = layer.alert('修改成功!', function () {
                                 // 关闭弹出层
                                 layer.close(index);
                                 var iframeIndex = parent.layer.getFrameIndex(window.name);
@@ -67,11 +82,11 @@
                                 parent.layer.close(iframeIndex);
                             });
                         } else
-                            var index = layer.alert('添加失败!' + data.msg);
+                            var index = layer.alert('修改失败!' + data.msg);
                     },
                     error: function (xhr, status, error) {
                         console.log(error);
-                        $.messager.alert('错误', '加载数据出错：' + error, 'error');
+                        layer.alert('错误,加载数据出错：' + error);
                     }
                 });
 
