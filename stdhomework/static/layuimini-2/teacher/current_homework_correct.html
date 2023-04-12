@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>layui 框架使用</title>
+<script src="../lib/layui-v2.6.3/layui.js" charset="utf-8"></script>
+<script src="https://cdn.bootcss.com/jquery/3.6.0/jquery.min.js"></script>
+    <link rel="stylesheet" href="../lib/layui-v2.6.3/css/layui.css" media="all">
+    <link rel="stylesheet" href="../css/public.css" media="all">
+</head>
+<body>
+
+<button type="button" class="layui-btn" id="test1">
+    <i class="layui-icon">&#xe67c;</i>上传图片
+</button>
+<button type="button" class="layui-btn" id="action">开始上传</button>
+<script>
+    layui.use('upload', function () {
+        var upload = layui.upload;
+
+        //执行实例
+        var uploadInst = upload.render({
+            accept: "image"
+            , elem: '#test1' //绑定元素
+            , auto: false// 不自动上传
+            , url: '/index.php' //上传接口
+            , choose: function (res) {
+                console.log(res);
+            }
+            , done: function (res) {
+                //上传完毕回调
+            }
+            , error: function () {
+                //请求异常回调
+            }
+        });
+    });
+</script>
+</body>
+
+
+</body>
+</html>

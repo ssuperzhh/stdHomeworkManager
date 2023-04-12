@@ -8,41 +8,37 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
     <link rel="stylesheet" href="../lib/layui-v2.6.3/css/layui.css" media="all">
     <link rel="stylesheet" href="../css/public.css" media="all">
-    <style>
-        table tbody tr:hover * {
-            cursor: pointer;
-        }
-    </style>
+    <!--    <style>-->
+    <!--        table tbody tr:hover * {-->
+    <!--            cursor: pointer;-->
+    <!--        }-->
+    <!--    </style>-->
 </head>
 <body>
 <div class="layuimini-container">
     <div class="layuimini-main">
-
-        <fieldset class="table-search-fieldset">
-            <legend>搜索信息</legend>
-            <div style="margin: 10px 10px 10px 10px">
-                <form class="layui-form layui-form-pane" action="">
-                    <div class="layui-form-item">
-                        <div class="layui-inline">
-                            <label class="layui-form-label">作业名称</label>
-                            <div class="layui-input-inline">
-                                <input type="text" name="course_name" autocomplete="off" class="layui-input">
-                            </div>
-                        </div>
-                        <div class="layui-inline">
-                            <button type="submit" class="layui-btn layui-btn-primary" lay-submit
-                                    lay-filter="data-search-btn"><i class="layui-icon"></i> 搜 索
-                            </button>
-                        </div>
-                    </div>
-                </form>
+        <script type="text/html" id="toolbarDemo">
+            <div class="layui-btn-container">
+                <button class="layui-btn layui-btn-normal layui-btn-sm data-add-btn" lay-event="add"> 添加</button>
             </div>
-        </fieldset>
+        </script>
         <table class="layui-hide" id="currentTableId" lay-filter="currentTableFilter"></table>
+        <script type="text/html" id="currentTableBar">
+            <a class="layui-btn layui-btn-normal layui-btn-xs data-count-edit" lay-event="correct">批改作业</a>
+            <a class="layui-btn layui-btn-xs layui-btn-danger data-count-delete" lay-event="delete">删除</a>
+        </script>
     </div>
 </div>
 <script src="../lib/layui-v2.6.3/layui.js" charset="utf-8"></script>
 <script>
+    // 定义加载表格的函数
+    function reloadTable() {
+        layui.use('table', function () {
+            var table = layui.table;
+            table.reload('currentTableId');
+        });
+    }
+
     layui.use(['form', 'table', 'jquery'], function () {
         var $ = layui.jquery,
             form = layui.form,
@@ -61,44 +57,73 @@
                 {field: 'homework_id', title: '作业编号', width: '10%'},
                 {field: 'homework_name', title: '作业名', width: '20%'},
                 {field: 'type', title: '作业类型', width: '20%'},
-                {field: 'course_id', title: '所属课程id', width: '7%'},
+                {field: 'course_id', title: '所属课程id', width: '10%'},
+                {title: '操作', minWidth: 40, toolbar: '#currentTableBar', align: "center"}
             ]],
             limits: [10, 15, 20, 25, 50, 100],
             limit: 15,
             page: true,
             skin: 'line'
         });
-        //触发行单击事件
-        table.on('row(currentTableFilter)', function (obj) {
-            sessionStorage.setItem('current_course', JSON.stringify(obj.data));
-            var index = layer.open({
-                title: obj.data.course_name + '课',
-                type: 2,
-                shade: 0.2,
-                maxmin: true,
-                shadeClose: true,
-                area: ['100%', '100%'],
-                content: './current_course_manager.html',
-            });
-            $(window).on("resize", function () {
-                layer.full(index);
-            });
-        });
-        // 监听搜索操作
-        form.on('submit(data-search-btn)', function (data) {
-            var result = data.field;
-            //执行搜索重载
-            table.reload('currentTableId', {
-                page: {
-                    curr: 1
-                }
-                , where: {
-                    course_name: result.course_name,
-                }
-            }, 'data');
 
-            return false;
+        table.on('toolbar(currentTableFilter)', function (obj) {
+            if (obj.event === 'add') {  // 监听添加操作
+                var index = layer.open({
+                    title: '添加作业',
+                    type: 2,
+                    shade: 0.2,
+                    maxmin: true,
+                    shadeClose: true,
+                    area: ['100%', '100%'],
+                    content: './current_homework_add.html',
+                });
+                $(window).on("resize", function () {
+                    layer.full(index);
+                });
+            } else if (obj.event === 'delete') {  // 监听删除操作
+                var checkStatus = table.checkStatus('currentTableId')
+                    , data = checkStatus.data;
+                layer.alert(JSON.stringify(data));
+            }
         });
+        table.on('tool(currentTableFilter)', function (obj) {
+            var data = obj.data;
+            if (obj.event === 'correct') {
+                //console.log(obj.data)
+                sessionStorage.setItem('editingCurNotice', JSON.stringify(data));
+                var index = layer.open({
+                    title: '编辑课程公告',
+                    type: 2,
+                    shade: 0.2,
+                    maxmin: true,
+                    shadeClose: true,
+                    area: ['100%', '100%'],
+                    content: './current_homework_correct.html',
+                });
+                $(window).on("resize", function () {
+                    layer.full(index);
+                });
+                return false;
+            } else if (obj.event == 'delete') {
+                layer.alert('删除课程作业请联系管理员！');
+            }
+        });
+        // //触发行单击事件
+        // table.on('row(currentTableFilter)', function (obj) {
+        //     sessionStorage.setItem('current_course', JSON.stringify(obj.data));
+        //     var index = layer.open({
+        //         title: '作业管理',
+        //         type: 2,
+        //         shade: 0.2,
+        //         maxmin: true,
+        //         shadeClose: true,
+        //         area: ['100%', '100%'],
+        //         content: './current_homework_correct.html',
+        //     });
+        //     $(window).on("resize", function () {
+        //         layer.full(index);
+        //     });
+        // });
 
     });
 </script>

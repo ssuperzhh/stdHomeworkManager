@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>layui</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="../lib/layui-v2.6.3/css/layui.css" media="all">
+    <link rel="stylesheet" href="../css/public.css" media="all">
+    <style>
+        body {
+            background-color: #ffffff;
+        }
+    </style>
+</head>
+<body>
+<div class="layui-form layuimini-form" lay-filter="cur_course_notice_add" name="form">
+    <div class="layui-form-item">
+        <label class="layui-form-label">作业id</label>
+        <div class="layui-input-block">
+            <input type="text" name="homework_id" lay-verify="required" lay-reqtext="作业id不能为空"
+                   placeholder="请输入作业id"
+                   value="" class="layui-input">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label required">作业名</label>
+        <div class="layui-input-block">
+            <input type="text" name="homework_name" lay-verify="required" lay-reqtext="作业名不能为空"
+                   placeholder="请输入作业名"
+                   value="" class="layui-input">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">作业类型</label>
+        <div class="layui-input-block">
+            <input type="radio" lay-filter="radio_filter" name="type" value="excel" title="excel">
+            <input type="radio" lay-filter="radio_filter" name="type" value="normal" title="normal">
+        </div>
+    </div>
+    <div class="layui-form-item" id="file-upload" style="display: none">
+        <label class="layui-form-label">上传文件</label>
+        <div class="layui-input-block">
+            <button type="button" class="layui-btn" id="test-upload-normal">选择文件</button>
+            <input type="text" style="width: auto" class="layui-input layui-disabled" id="upload-file-name" readonly>
+            <button type="button" class="layui-btn layui-btn-danger layui-hide" id="test-upload-reload">重传</button>
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <div class="layui-input-block">
+            <button id="submit-btn" class="layui-btn layui-btn-normal" lay-submit lay-filter="saveBtn">确认保存</button>
+        </div>
+    </div>
+</div>
+<script src="../lib/layui-v2.6.3/layui.js" charset="utf-8"></script>
+<script src="https://cdn.bootcss.com/jquery/3.6.0/jquery.min.js"></script>
+<script>
+    layui.use(['form', 'upload'], function () {
+        var form = layui.form;
+        var upload = layui.upload;
+        layer = layui.layer,
+            $ = layui.$;
+        // 上传组件初始化
+        var formData = new FormData(); // 创建 formData 对象
+        upload.render({
+            elem: '#test-upload-normal',
+            //url: '/courses/upload',
+            accept: 'file',
+            auto: false, // 不自动上传
+            size: 0,
+            bindAction: '#submit-btn', // 将文件上传和表单提交关联起来
+            choose: function (obj) {
+                //将每次选择的文件追加到文件队列
+                var files = obj.pushFile();
+                //预读本地文件，如果是多文件，则会遍历。(不支持ie8/9)
+                obj.preview(function (index, file, result) {
+                    //console.log(index); //得到文件索引
+                    //console.log(file); //得到文件对象
+                    //console.log(result); //得到文件base64编码，比如图片
+                    $('#upload-file-name').val(file.name);
+                    formData.append('file', file); // 将文件对象添加到 formData 中
+                });
+            },
+            done: function (res) {
+                console.log(res);
+            },
+            error: function () {
+                // 上传失败
+                formData = new FormData();
+            }
+        });
+        form.on('radio(radio_filter)', function (data) {
+            console.log(data.elem); //得到radio原始DOM对象
+            console.log(data.value); //被点击的radio的value值
+            if (data.value == 'excel') {
+                $('#file-upload').show();
+            } else if (data.value == 'normal') {
+                $('#file-upload').hide();
+            }
+        });
+        //监听提交
+        form.on('submit(saveBtn)', function (data) {
+            data.field.course_id=JSON.parse(sessionStorage.getItem('current_course')).course_id
+            // 将表单数据和文件数据组合到 formData 中
+            formData.append('form_data', JSON.stringify(data.field));
+            console.log(formData);
+            $.ajax({
+                url: '/courses/upload',
+                type: 'POST',
+                contentType: false,
+                processData: false,
+                data: formData,
+                dataType: 'json',
+                success: function (data) {
+                    if (data.code == '200') {
+                        var index = layer.alert('添加成功!', function () {
+                            // 关闭弹出层
+                            layer.close(index);
+                            var iframeIndex = parent.layer.getFrameIndex(window.name);
+                            parent.reloadTable();
+                            parent.layer.close(iframeIndex);
+                        });
+                    } else
+                        var index = layer.alert('添加失败!' + data.msg);
+                },
+                error: function (xhr, status, error) {
+                    console.log(error);
+                    layer.alert('错误,加载数据出错：' + error);
+                }
+            });
+
+            return false;
+        });
+    });
+
+</script>
+</body>
+</html>

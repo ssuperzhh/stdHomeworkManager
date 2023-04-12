@@ -2,7 +2,7 @@ import os
 from datetime import datetime
 
 from flask import (
-    Blueprint, flash, g, redirect, render_template, request, url_for, jsonify, current_app, send_file
+    Blueprint, flash, g, redirect, render_template, request, url_for, jsonify, current_app, send_file, json
 )
 from werkzeug.exceptions import abort
 from werkzeug.utils import secure_filename
@@ -206,7 +206,7 @@ def delete_course_homeworks():
     # 创建一个 cursor 对象
     cursor = db.cursor()
     try:
-        result = cursor.execute("DELETE FROM homeworkinfo WHERE homework_id = %s", (homework_id,))
+        result = cursor.execute(f"DELETE FROM homeworkinfo WHERE homework_id = '{homework_id}'")
         db.commit()
         if result > 0:
             # 返回信息
@@ -245,17 +245,39 @@ def file_upload():
     # 保存文件
     filename = secure_filename(file.filename)
     file_url = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
-    file.save(file_url)
+    file.save(file_url)# 文件上传
+    # 获取表单中的参数
+    form_data = request.form.get('form_data')
+    form_data = json.loads(form_data)
 
-    # db = get_db()
-    # # 创建一个 cursor 对象
-    # cursor = db.cursor()
-    # cursor.execute("INSERT INTO FileInfo (url, file_name, type, homework_id, stu_id) VALUES (%s, %s, %s, %s, %s)",
-    #                (os.path.join(current_app.config['UPLOAD_FOLDER'], filename), filename, 'a', 1, 'A00001'))
-    # db.commit()
-    # cursor.close()
-    return jsonify({'code': 200, 'msg': 'File uploaded successfully'}), 200
+    # 获取表单中的普通字段参数
+    homework_id = form_data.get('homework_id')
+    homework_name = form_data.get('homework_name')
+    create_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    type = form_data.get('type')
+    course_id = form_data.get('course_id')
+    # 插入新数据
+    db = get_db()
+    try:
+        # 创建一个 cursor 对象
+        cursor = db.cursor()
+        #先添加作业
+        cursor.execute(f"INSERT INTO homeworkinfo (homework_id, homework_name, date, type, course_id) "
+                       f"VALUES ({homework_id}, '{homework_name}', '{create_time}', '{type}', {course_id})")
+        #再添加文件
+        cursor.execute(f"INSERT INTO fileInfo (url, file_name, type, homework_id) "
+                       f"VALUES ('{file_url}', '{filename}','{1}', {homework_id})",
+                       )
+        db.commit()
+        cursor.close()
+        return jsonify({'code': 200, 'msg': 'File uploaded successfully'}), 200
+    except Exception as e:
+        # 如果出现异常，回滚并关闭游标
+        db.rollback()
+        cursor.close()
 
+        # 返回错误信息
+        return jsonify({'code': 500, 'msg': str(e)})
 
 # # 处理文件下载请求
 @bp.route('/download/<filename>', methods=['GET'])
