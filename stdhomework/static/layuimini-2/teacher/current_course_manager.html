@@ -61,7 +61,18 @@
 
     function course_homework_manager(event) {
         event.preventDefault();  // 阻止链接的默认行为
-
+        var index = layer.open({
+            title: '管理作业',
+            type: 2,
+            shade: 0.2,
+            maxmin: true,
+            shadeClose: true,
+            area: ['100%', '100%'],
+            content: './current_course_homework.html',
+        });
+        $(window).on("resize", function () {
+            layer.full(index);
+        });
     }
 </script>
 </body>
