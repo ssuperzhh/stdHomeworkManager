@@ -89,20 +89,41 @@
         table.on('tool(currentTableFilter)', function (obj) {
             var data = obj.data;
             if (obj.event === 'correct') {
-                //console.log(obj.data)
-                sessionStorage.setItem('editingCurNotice', JSON.stringify(data));
-                var index = layer.open({
-                    title: '编辑课程公告',
-                    type: 2,
-                    shade: 0.2,
-                    maxmin: true,
-                    shadeClose: true,
-                    area: ['100%', '100%'],
-                    content: './current_homework_correct.html',
-                });
-                $(window).on("resize", function () {
-                    layer.full(index);
-                });
+                if (data.type == 'excel') {
+                    $.ajax({
+                        url: '/courses/auto_correct',
+                        type: 'GET',
+                        contentType: false,
+                        //async:false,
+                        dataType: 'json',
+                        success: function (res) {
+                            if (res.code == 200) {
+                                layer.alert('自动批改完成');
+                            }
+                            else
+                                layer.alert(res.msg);
+                        },
+                        error: function (xhr, status, error) {
+                            console.log(error);
+                            layer.alert('错误,加载接口数据出错：' + error);
+                        }
+                    });
+                } else {
+                    //console.log(obj.data)
+                    sessionStorage.setItem('editingCurNotice', JSON.stringify(data));
+                    var index = layer.open({
+                        title: '编辑课程公告',
+                        type: 2,
+                        shade: 0.2,
+                        maxmin: true,
+                        shadeClose: true,
+                        area: ['100%', '100%'],
+                        content: './current_homework_correct.html',
+                    });
+                    $(window).on("resize", function () {
+                        layer.full(index);
+                    });
+                }
                 return false;
             } else if (obj.event == 'delete') {
                 layer.alert('删除课程作业请联系管理员！');

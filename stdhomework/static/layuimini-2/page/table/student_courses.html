@@ -37,10 +37,10 @@
 
     layui.use('table', function () {
         var table = layui.table;
-        var stu_id = JSON.parse(sessionStorage.getItem('stu_id'));
+        var stu_name = JSON.parse(sessionStorage.getItem('stu_name'));
         table.render({
             elem: '#student_courses_id',
-            url: '/student/' + stu_id + '/courses', //数据接口,
+            url: '/student/' + stu_name + '/courses', //数据接口,
             page: true, //开启分页
             toolbar: '#toolbarDemo',
             cols: [[ //表头

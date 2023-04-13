@@ -195,6 +195,7 @@
                 });
             } else if (obj.event === 'viewCourses') {
                 sessionStorage.setItem('stu_id', JSON.stringify(data.stu_id));
+                sessionStorage.setItem('stu_name', JSON.stringify(data.name));
                 var index = layer.open({
                     title: data.name + '的课表',
                     type: 2,

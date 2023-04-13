@@ -247,10 +247,11 @@ def file_upload():
     # 保存文件
     filename = secure_filename(file.filename)
     file_url = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
-    #file.save(file_url)  # 文件上传
+    file.save(file_url)  # 文件上传
     return jsonify({'code': 200, 'msg': 'File uploaded successfully'}), 200
 
-@bp.route('/upload/add', methods=['POST'])  # 中文文件上传尚未解决
+
+@bp.route('/upload/add', methods=['POST'])
 def file_upload_add():
     # 检查上传的文件是否存在
     if 'file' not in request.files:
@@ -264,7 +265,7 @@ def file_upload_add():
     # 保存文件
     filename = secure_filename(file.filename)
     file_url = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
-    file.save(file_url)  # 文件上传
+    # file.save(file_url)  # 文件上传
     # 获取表单中的参数
     form_data = request.form.get('form_data')
     form_data = json.loads(form_data)
@@ -300,11 +301,156 @@ def file_upload_add():
 
 
 # # 处理文件下载请求
+# @bp.route('/download/<filename>', methods=['GET'])
+# def file_download(filename):
+#     homework_path = os.path.join(current_app.config['UPLOAD_FOLDER'], 'homework')
+#     # 检查上传的文件名是否存在
+#     file_path = os.path.abspath(os.path.join(homework_path, filename))
+#     if not os.path.exists(file_path):
+#         return jsonify({'code': 404, 'msg': 'File not found'}), 404
+#     # 向浏览器发送文件
+#     return send_file(file_path, as_attachment=True)
+# 图片 MIME 类型映射表
+MIME_TYPES = {
+    '.txt': 'text/plain',
+    '.xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+}
+
+
 @bp.route('/download/<filename>', methods=['GET'])
 def file_download(filename):
-    # 检查上传的文件名是否存在
-    file_path = os.path.abspath(os.path.join(current_app.config['UPLOAD_FOLDER'], filename))
-    if not os.path.exists(file_path):
-        return jsonify({'code': 404, 'msg': 'File not found'}), 404
+    homework_path = os.path.join(current_app.config['UPLOAD_FOLDER'], 'homework')
+    file_path = os.path.abspath(os.path.join(homework_path, filename))
+
+    if not os.path.isfile(file_path):
+        return jsonify({'code': 404, 'msg': 'File not found.'}), 404
+
+    # 从文件名获取文件扩展名
+    ext = os.path.splitext(filename)[1]
+
+    # 如果 MIME 类型未定义，使用通用二进制流
+    mime_type = MIME_TYPES.get(ext, 'application/octet-stream')
+
     # 向浏览器发送文件
-    return send_file(file_path, as_attachment=True)
+    return send_file(file_path, as_attachment=True, mimetype=mime_type)
+
+
+@bp.route('/get_download_file/<int:homework_id>', methods=['GET'])
+def get_download_file(homework_id):
+    db = get_db()
+    cursor = db.cursor()
+    sql = f'SELECT DISTINCT file_name FROM fileinfo WHERE homework_id={homework_id}'
+    try:
+        cursor.execute(sql)
+        file_name = cursor.fetchone()
+        return jsonify({'code': 200, 'msg': '', 'data': file_name}), 200
+    except Exception as e:
+        # 返回错误信息
+        return jsonify({'code': 500, 'msg': str(e)})
+
+
+# excel作业自动批改
+@bp.route('/auto_correct', methods=['GET'])
+def auto_correct():
+    import os
+    import re
+    from openpyxl import load_workbook
+    from openpyxl import Workbook
+
+    homework = os.path.join(current_app.config['UPLOAD_FOLDER'], 'homework')
+    answer_file = os.path.join(homework, 'answer.xlsx')
+    folder_path = os.path.join(homework, 'student-answer')
+    check_file = os.path.join(homework, 'check.txt')
+    result_file = os.path.join(homework, 'result.txt')
+    score_file = os.path.join(homework, 'score.xlsx')
+    # Load the answer Excel workbook
+    answer_wb = load_workbook(answer_file, data_only=True)  # Set data_only to True to get calculated values
+
+    # Read the check file
+    with open(check_file, 'r', encoding='utf-8') as f:
+        check_lines = f.readlines()
+
+    def check_functions(formula, functions):
+        if not functions:  # If the formula string is empty, return True
+            return True
+
+        for group in functions:
+            for func in group:
+                pattern = re.escape(func).replace(r'\*', '.*')
+                if not re.search(pattern, formula, re.IGNORECASE):
+                    break
+            else:
+                return True
+        return False
+
+    # Create a new Excel workbook for scores
+    score_wb = Workbook()
+    score_ws = score_wb.active
+    score_ws.title = "Scores"
+    score_ws.append(["Student File", "Total Score"])
+
+    try:
+        # Open the result file for writing
+        with open(result_file, 'w') as f:
+            # Iterate through each student file in the folder
+            for student_file in os.listdir(folder_path):
+                if student_file.endswith('.xlsx'):
+                    student_wb = load_workbook(os.path.join(folder_path, student_file),
+                                               data_only=True)  # Set data_only to True to get calculated values
+                    student_wb_formulas = load_workbook(os.path.join(folder_path, student_file),
+                                                        data_only=False)  # Set data_only to False to get formulas
+                    total_score = 0
+                    f.write(f'#####{student_file}:\n')
+
+                    # Iterate through the check_lines
+                    for line in check_lines:
+                        line = line.strip()
+                        if line.startswith('#'):  # Sheet name
+                            sheet_name = line[1:]
+                            f.write(f'{line}\n')  # Write the sheet name to the result file
+                        else:  # Cell and scores
+                            pattern = r'(\w+)-([\d.]+)-([\d.]+)(?:-{(.*?)})?'
+                            match = re.match(pattern, line)
+                            if match:
+                                cell, value_score, formula_score, functions_str = match.groups()
+
+                                value_score = float(value_score)
+                                formula_score = float(formula_score)
+
+                                # Extract function groups
+                                if functions_str:
+                                    functions = [group.split('and') for group in re.split(r'\s*;\s*', functions_str)]
+                                else:
+                                    functions = []
+
+                                # Compare the student cell with the answer cell
+                                student_cell = student_wb[sheet_name][cell]
+                                student_cell_formula = student_wb_formulas[sheet_name][cell]
+                                answer_cell = answer_wb[sheet_name][cell]
+
+                                # Check the calculated value
+                                if student_cell.value == answer_cell.value:
+                                    f.write(f'{cell} value-{value_score:.1f} ')
+                                    total_score += value_score
+
+                                    # Check the formula if the calculated value matches
+                                    if student_cell_formula.data_type == "f" and check_functions(
+                                            student_cell_formula.value,
+                                            functions):
+                                        f.write(f'formula-{formula_score:.1f}\n')
+                                        total_score += formula_score
+                                    else:
+                                        f.write(f'formula-0\n')
+                                else:
+                                    f.write(f'{cell} value-0 formula-0\n')
+
+                    f.write(f'Total:{total_score:.1f}\n\n')
+                    # Append the student file and total score to the score worksheet
+                    score_ws.append([student_file, total_score])
+        # Save the score workbook
+        score_wb.save(score_file)
+        return jsonify({'code': 200, 'msg': 'Results written to result.txt"'}), 200
+
+    except Exception as e:
+        # 返回错误信息
+        return jsonify({'code': 500, 'msg': str(e)})

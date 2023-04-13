@@ -1,0 +1,42 @@
+#ex1(60 points)
+D4-2.5-2.5-{IF}
+D10-2.5-2.5-{IF}
+E4-2.5-2.5-{SUM;+}
+E10-2.5-2.5-{SUM;+}
+F4-2.5-2.5-{IF(*IF(*)*)}
+F10-2.5-2.5-{IF(*IF(*)*)}
+G4-2.5-2.5-{VLOOKUP}
+G10-2.5-2.5-{VLOOKUP}
+D14-2-2-{average}
+D15-2-2-{max}
+D16-2-2-{min}
+D17-2-2-{count}
+D18-2-2-{countif}
+
+
+
+#ex2 (20 points)
+E4-1-1-{year}
+E10-1-1-{year}
+F4-1-1-{month}
+F10-1-1-{month}
+G4-2-2-{if(*mod(*)*)}
+G10-2-2-{if(*mod(*)*)}
+H4-1-1-{concatenate}
+H10-1-1-{concatenate}
+
+#ex3 (10 points)
+B5-2.5-2.5-{pv}
+B7-5-0
+
+#ex4(10 points)
+K2-2-0
+M2-2-0
+L2-2-0
+
+#ex4-Result
+A1-1-0
+I1-1-0
+A6-1-0
+I6-1-0
+
