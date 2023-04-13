@@ -138,7 +138,8 @@ def get_course_homeworks(course_id):
         # 返回错误信息
         return jsonify({'code': 500, 'msg': str(e)})
 
-#添加课程作业
+
+# 添加课程作业
 @bp.route('/homeworks', methods=['POST'])
 def create_course_homeworks():
     data = request.get_json()
@@ -167,7 +168,7 @@ def create_course_homeworks():
         return jsonify({'code': 500, 'msg': str(e)})
 
 
-#编辑课程作业
+# 编辑课程作业
 @bp.route('/homeworks/update', methods=['PUT'])
 def update_course_homeworks():
     data = request.get_json()
@@ -182,8 +183,9 @@ def update_course_homeworks():
     # 创建一个 cursor 对象
     cursor = db.cursor()
     try:
-        result = cursor.execute("UPDATE homeworkinfo SET homework_name = %s, type = %s, date = %s WHERE homework_id = %s",
-                                (homework_name, type, create_time, homework_id))
+        result = cursor.execute(
+            "UPDATE homeworkinfo SET homework_name = %s, type = %s, date = %s WHERE homework_id = %s",
+            (homework_name, type, create_time, homework_id))
         db.commit()
         if result > 0:
             # 返回信息
@@ -245,7 +247,24 @@ def file_upload():
     # 保存文件
     filename = secure_filename(file.filename)
     file_url = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
-    file.save(file_url)# 文件上传
+    #file.save(file_url)  # 文件上传
+    return jsonify({'code': 200, 'msg': 'File uploaded successfully'}), 200
+
+@bp.route('/upload/add', methods=['POST'])  # 中文文件上传尚未解决
+def file_upload_add():
+    # 检查上传的文件是否存在
+    if 'file' not in request.files:
+        return jsonify({'code': 400, 'msg': 'No file found'}), 400
+    file = request.files['file']
+    # 检查上传的文件名是否合法
+    if file.filename == '':
+        return jsonify({'code': 400, 'msg': 'No selected file'}), 400
+    if not allowed_file(file.filename):
+        return jsonify({'code': 400, 'msg': 'Invalid file type'}), 400
+    # 保存文件
+    filename = secure_filename(file.filename)
+    file_url = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
+    file.save(file_url)  # 文件上传
     # 获取表单中的参数
     form_data = request.form.get('form_data')
     form_data = json.loads(form_data)
@@ -261,10 +280,10 @@ def file_upload():
     try:
         # 创建一个 cursor 对象
         cursor = db.cursor()
-        #先添加作业
+        # 先添加作业
         cursor.execute(f"INSERT INTO homeworkinfo (homework_id, homework_name, date, type, course_id) "
                        f"VALUES ({homework_id}, '{homework_name}', '{create_time}', '{type}', {course_id})")
-        #再添加文件
+        # 再添加文件
         cursor.execute(f"INSERT INTO fileInfo (url, file_name, type, homework_id) "
                        f"VALUES ('{file_url}', '{filename}','{1}', {homework_id})",
                        )
@@ -278,6 +297,7 @@ def file_upload():
 
         # 返回错误信息
         return jsonify({'code': 500, 'msg': str(e)})
+
 
 # # 处理文件下载请求
 @bp.route('/download/<filename>', methods=['GET'])

@@ -65,7 +65,7 @@
         var formData = new FormData(); // 创建 formData 对象
         upload.render({
             elem: '#test-upload-normal',
-            //url: '/courses/upload',
+            url: '/courses/upload',
             accept: 'file',
             auto: false, // 不自动上传
             size: 0,
@@ -79,6 +79,7 @@
                     //console.log(file); //得到文件对象
                     //console.log(result); //得到文件base64编码，比如图片
                     $('#upload-file-name').val(file.name);
+                    formData = new FormData();
                     formData.append('file', file); // 将文件对象添加到 formData 中
                 });
             },
@@ -98,6 +99,7 @@
             } else if (data.value == 'normal') {
                 $('#file-upload').hide();
             }
+            return false;
         });
         //监听提交
         form.on('submit(saveBtn)', function (data) {
@@ -106,7 +108,7 @@
             formData.append('form_data', JSON.stringify(data.field));
             console.log(formData);
             $.ajax({
-                url: '/courses/upload',
+                url: '/courses/upload/add',
                 type: 'POST',
                 contentType: false,
                 processData: false,
