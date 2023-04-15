@@ -121,7 +121,9 @@ def delete_course_notice_notice():
 def get_course_homeworks(course_id):
     db = get_db()
     try:
-        sql = f'SELECT * FROM homeworkinfo WHERE course_id = "{course_id}"'
+        sql = f'SELECT A.*,B.state FROM homeworkinfo A ' \
+              f'LEFT JOIN student_homework B ON A.homework_id=B.homework_id ' \
+              f'WHERE course_id = "{course_id}"'
         cursor = db.cursor()
         cursor.execute(sql)
         db.commit()
@@ -288,6 +290,74 @@ def file_upload_add():
         cursor.execute(f"INSERT INTO fileInfo (url, file_name, type, homework_id) "
                        f"VALUES ('{file_url}', '{filename}','{1}', {homework_id})",
                        )
+        db.commit()
+        cursor.close()
+        return jsonify({'code': 200, 'msg': 'File uploaded successfully'}), 200
+    except Exception as e:
+        # 如果出现异常，回滚并关闭游标
+        db.rollback()
+        cursor.close()
+
+        # 返回错误信息
+        return jsonify({'code': 500, 'msg': str(e)})
+
+
+@bp.route('/student/upload', methods=['POST'])  # 中文文件上传尚未解决
+def student_file_upload():
+    # 检查上传的文件是否存在
+    if 'file' not in request.files:
+        return jsonify({'code': 400, 'msg': 'No file found'}), 400
+    file = request.files['file']
+    # 检查上传的文件名是否合法
+    if file.filename == '':
+        return jsonify({'code': 400, 'msg': 'No selected file'}), 400
+    if not allowed_file(file.filename):
+        return jsonify({'code': 400, 'msg': 'Invalid file type'}), 400
+    # 保存文件
+    filename = secure_filename(file.filename)
+    homework_url = os.path.join(current_app.config['UPLOAD_FOLDER'], 'homework')
+    student_url = os.path.join(homework_url, 'student-answer')
+    file_url = os.path.join(student_url, filename)
+    file.save(file_url)  # 文件上传
+    return jsonify({'code': 200, 'msg': 'File uploaded successfully'}), 200
+
+
+@bp.route('/student/upload/add', methods=['POST'])
+def student_file_upload_add():
+    # 检查上传的文件是否存在
+    if 'file' not in request.files:
+        return jsonify({'code': 400, 'msg': 'No file found'}), 400
+    file = request.files['file']
+    # 检查上传的文件名是否合法
+    if file.filename == '':
+        return jsonify({'code': 400, 'msg': 'No selected file'}), 400
+    if not allowed_file(file.filename):
+        return jsonify({'code': 400, 'msg': 'Invalid file type'}), 400
+    filename = secure_filename(file.filename)
+    homework_url = os.path.join(current_app.config['UPLOAD_FOLDER'], 'homework')
+    student_url = os.path.join(homework_url, 'student-answer')
+    file_url = os.path.join(student_url, filename)
+    # file.save(file_url)  # 文件上传
+    # 获取表单中的参数
+    form_data = request.form.get('form_data')
+    form_data = json.loads(form_data)
+
+    # 获取表单中的普通字段参数
+    homework_id = form_data.get('homework_id')
+    homework_name = form_data.get('homework_name')
+    stu_id = form_data.get('stu_id')
+    # 插入新数据
+    db = get_db()
+    try:
+        # 创建一个 cursor 对象
+        cursor = db.cursor()
+        # 添加学生作业文件
+        cursor.execute(f"INSERT INTO fileInfo (url, file_name, type, homework_id,stu_id) "
+                       f"VALUES ('{file_url}', '{filename}','{2}', {homework_id},'{stu_id}')",#1作业文件，2学生作业，3答案
+                       )
+        cursor.execute(f"INSERT INTO student_homework (answer, state, homework_id,student_id) "
+                       f"VALUES ('{file_url}', 'finished', {homework_id},'{stu_id}')",  # 1作业文件，2学生作业，3答案
+                       )#添加进学生作业表中
         db.commit()
         cursor.close()
         return jsonify({'code': 200, 'msg': 'File uploaded successfully'}), 200

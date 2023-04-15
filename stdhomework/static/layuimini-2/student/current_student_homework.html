@@ -52,6 +52,7 @@
                 {field: 'homework_name', title: '作业名', width: '20%'},
                 {field: 'type', title: '作业类型', width: '20%'},
                 {field: 'course_id', title: '所属课程id', width: '10%'},
+                {field: 'state', title: '作业状态', width: '10%'},
                 {title: '操作', minWidth: 40, toolbar: '#currentTableBar', align: "center"}
             ]],
             limits: [10, 15, 20, 25, 50, 100],
@@ -62,21 +63,26 @@
 
         table.on('tool(currentTableFilter)', function (obj) {
             var data = obj.data;
-            sessionStorage.setItem('homework', JSON.stringify(data));
             if (obj.event === 'correct') {
                 if (data.type == 'excel') {
-                    var index = layer.open({
-                        title: '作业详情',
-                        type: 2,
-                        shade: 0.2,
-                        maxmin: true,
-                        shadeClose: true,
-                        area: ['100%', '100%'],
-                        content: './excel_homework.html',
-                    });
-                    $(window).on("resize", function () {
-                        layer.full(index);
-                    });
+                    if (data.state == 'finished')//表示已完成作业
+                    {
+                        layer.alert('作业已完成，不允许修改');
+                    } else {
+                        var index = layer.open({
+                            title: '作业详情',
+                            type: 2,
+                            shade: 0.2,
+                            maxmin: true,
+                            shadeClose: true,
+                            area: ['100%', '100%'],
+                            content: './excel_homework.html',
+                        });
+                        $(window).on("resize", function () {
+                            layer.full(index);
+                        });
+                    }
+
                 } else {
                     var index = layer.open({
                         title: '编辑课程公告',

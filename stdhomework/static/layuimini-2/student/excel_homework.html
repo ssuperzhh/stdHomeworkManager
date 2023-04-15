@@ -15,17 +15,26 @@
     </style>
 </head>
 <body>
-<div class="layui-form layuimini-form" lay-filter="cur_course_notice_add" name="form">
+<div class="layui-form layuimini-form" lay-filter="form_std" name="form">
+    <div class="layui-form-item">
+        <label class="layui-form-label">学生id:</label>
+        <div class="layui-input-block">
+            <!--            <label class="layui-form-label" id="stu_id"></label>-->
+            <input type="text" style="width: auto" name="stu_id" value="" class="layui-input" readonly>
+        </div>
+    </div>
     <div class="layui-form-item">
         <label class="layui-form-label">作业id:</label>
         <div class="layui-input-block">
-            <label class="layui-form-label" id="homework_id"></label>
+            <!--            <label class="layui-form-label" id="homework_id"></label>-->
+            <input type="label" style="width: auto" name="homework_id" value="" class="layui-input" readonly>
         </div>
     </div>
     <div class="layui-form-item">
         <label class="layui-form-label">作业名:</label>
         <div class="layui-input-block">
-            <label class="layui-form-label" id="homework_name"></label>
+            <!--            <label class="layui-form-label" id="homework_name"></label>-->
+            <input type="text" style="width: auto" name="homework_name" value="" class="layui-input" readonly>
         </div>
     </div>
     <div class="layui-form-item">
@@ -37,11 +46,10 @@
     </div>
 
     <div class="layui-form-item" id="file-upload">
-        <label class="layui-form-label">上传文件</label>
+        <label class="layui-form-label">上传作业</label>
         <div class="layui-input-block">
             <button type="button" class="layui-btn" id="test-upload-normal">选择文件</button>
             <input type="text" style="width: auto" class="layui-input layui-disabled" id="upload-file-name" readonly>
-            <button type="button" class="layui-btn layui-btn-danger layui-hide" id="test-upload-reload">重传</button>
         </div>
     </div>
     <div class="layui-form-item">
@@ -54,11 +62,16 @@
 <script src="https://cdn.bootcss.com/jquery/3.6.0/jquery.min.js"></script>
 <script>
     var file_name;
-    var homework_id = document.getElementById("homework_id");
-    var homework_name = document.getElementById("homework_name");
-    homework = JSON.parse(sessionStorage.getItem('homework'))
-    homework_id.innerText = homework.homework_id
-    homework_name.innerText = homework.homework_name
+    // var homework_id = document.getElementById("homework_id");
+    // var homework_name = document.getElementById("homework_name");
+    // var stu_id = document.getElementById("stu_id");
+     homework = JSON.parse(sessionStorage.getItem('homework'))
+    // //homework_id.innerText = homework.homework_id;
+    // homework_name.innerText = homework.homework_name;
+    // stu_id.innerText = JSON.parse(sessionStorage.getItem('editingStudent')).stu_id;
+    // //homework_id.value = homework.homework_id;
+    // homework_name.value = homework.homework_name;
+    // stu_id.value = JSON.parse(sessionStorage.getItem('editingStudent')).stu_id;
 
     function downloadfile() {
         $.ajax({
@@ -94,7 +107,7 @@
                 file_name = data.data.file_name;
                 homework_file.innerText = file_name;
             } else
-                var index = layer.alert('添加失败!' + data.msg);
+                var index = layer.alert('失败!' + data.msg);
         },
         error: function (xhr, status, error) {
             console.log(error);
@@ -108,12 +121,18 @@
         layer = layui.layer,
             $ = layui.$;
 
+        //给表单赋值
+        form.val("form_std", { //formTest 即 class="layui-form" 所在元素属性 lay-filter="" 对应的值
+            "stu_id":JSON.parse(sessionStorage.getItem('editingStudent')).stu_id,
+            "homework_id": homework.homework_id, // "name": "value"
+            "homework_name": homework.homework_name, // "name": "value"
+        });
 
         // 上传组件初始化
         var formData = new FormData(); // 创建 formData 对象
         upload.render({
             elem: '#test-upload-normal',
-            url: '/courses/upload',
+            url: '/courses/student/upload',
             accept: 'file',
             auto: false, // 不自动上传
             size: 0,
@@ -139,24 +158,14 @@
                 formData = new FormData();
             }
         });
-        form.on('radio(radio_filter)', function (data) {
-            console.log(data.elem); //得到radio原始DOM对象
-            console.log(data.value); //被点击的radio的value值
-            if (data.value == 'excel') {
-                $('#file-upload').show();
-            } else if (data.value == 'normal') {
-                $('#file-upload').hide();
-            }
-            return false;
-        });
         //监听提交
         form.on('submit(saveBtn)', function (data) {
-            data.field.course_id = JSON.parse(sessionStorage.getItem('current_course')).course_id
+            console.log(data.field);
             // 将表单数据和文件数据组合到 formData 中
             formData.append('form_data', JSON.stringify(data.field));
             console.log(formData);
             $.ajax({
-                url: '/courses/upload/add',
+                url: '/courses/student/upload/add',
                 type: 'POST',
                 contentType: false,
                 processData: false,
@@ -164,7 +173,7 @@
                 dataType: 'json',
                 success: function (data) {
                     if (data.code == '200') {
-                        var index = layer.alert('添加成功!', function () {
+                        var index = layer.alert('excel上传成功!', function () {
                             // 关闭弹出层
                             layer.close(index);
                             var iframeIndex = parent.layer.getFrameIndex(window.name);
@@ -172,7 +181,7 @@
                             parent.layer.close(iframeIndex);
                         });
                     } else
-                        var index = layer.alert('添加失败!' + data.msg);
+                        var index = layer.alert('失败!' + data.msg);
                 },
                 error: function (xhr, status, error) {
                     console.log(error);

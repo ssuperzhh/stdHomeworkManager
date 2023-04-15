@@ -188,6 +188,26 @@
                 }
             });
         });
+        $.ajax({
+            url: '/admin/students',
+            type: 'GET',
+            contentType: 'application/json',
+            data: {
+                std_name: sessionStorage.getItem('username')
+            },
+            //async:false,
+            dataType: 'json',
+            success: function (res) {
+                if (res.code == 0) {
+                    sessionStorage.setItem('editingStudent', JSON.stringify(res.data[0]));
+                } else
+                    layer.alert(res.msg);
+            },
+            error: function (xhr, status, error) {
+                console.log(error);
+                layer.alert('错误,加载接口数据出错：' + error);
+            }
+        });
     });
 </script>
 </body>
