@@ -92,18 +92,27 @@
             }
         });
         form.on('radio(radio_filter)', function (data) {
-            console.log(data.elem); //得到radio原始DOM对象
+            //console.log(data.elem); //得到radio原始DOM对象
             console.log(data.value); //被点击的radio的value值
             if (data.value == 'excel') {
                 $('#file-upload').show();
             } else if (data.value == 'normal') {
                 $('#file-upload').hide();
+                var index = layer.open({
+                    title: '添加普通格式作业',
+                    type: 2,
+                    shade: 0.2,
+                    maxmin: true,
+                    shadeClose: true,
+                    area: ['100%', '100%'],
+                    content: './normal_homework_add.html',
+                });
             }
             return false;
         });
         //监听提交
         form.on('submit(saveBtn)', function (data) {
-            data.field.course_id=JSON.parse(sessionStorage.getItem('current_course')).course_id
+            data.field.course_id = JSON.parse(sessionStorage.getItem('current_course')).course_id
             // 将表单数据和文件数据组合到 formData 中
             formData.append('form_data', JSON.stringify(data.field));
             console.log(formData);

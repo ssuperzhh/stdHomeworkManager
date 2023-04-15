@@ -524,3 +524,15 @@ def auto_correct():
     except Exception as e:
         # 返回错误信息
         return jsonify({'code': 500, 'msg': str(e)})
+
+
+@bp.route('/normal_homework_add', methods=['POST'])
+def normal_homework_add():
+    # 获取前端通过 Ajax 提交的数据
+    data = request.get_json()
+
+    # 处理前端提交的数据
+    # ... 根据需要进行相应的处理 ...
+
+    # 返回响应，可以使用 jsonify 函数将数据转为 JSON 格式
+    return jsonify({'result': 'success', 'message': '数据提交成功'})
