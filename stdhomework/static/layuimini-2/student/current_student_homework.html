@@ -69,6 +69,7 @@
                     {
                         layer.alert('作业已完成，不允许修改');
                     } else {
+                        sessionStorage.setItem('homework',JSON.stringify(data))
                         var index = layer.open({
                             title: '作业详情',
                             type: 2,
