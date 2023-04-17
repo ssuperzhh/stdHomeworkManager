@@ -32,7 +32,7 @@
                 </div>
                 <div class="layui-form-item">
                     <div class="layui-input-block">
-                        <button type="button" class="layui-btn layui-btn-danger" onclick="deleteQuestion()">删除题目
+                        <button type="button" class="layui-btn layui-btn-danger" onclick="deleteQuestion()">删除全部题目
                         </button>
                         <button type="button" class="layui-btn" onclick="submitForm()">提交</button>
                     </div>
@@ -53,16 +53,20 @@
             var questionHtml = '';
             if (type === 'choice') {
                 questionHtml = `
-                    <div class="layui-form-item question-item">
-                        <label class="layui-form-label">选择题</label>
-                        <div class="layui-input-block">
-                            <input type="text" name="choice_question[]" required lay-verify="required" placeholder="请输入题目" class="layui-input">
-                            <input type="text" name="choice_option[]" required lay-verify="required" placeholder="请输入选项，以英文逗号分隔" class="layui-input">
-                            <input type="text" name="choice_answer[]" required lay-verify="required" placeholder="请输入答案" class="layui-input">
-                            <button type="button" class="layui-btn layui-btn-xs layui-btn-danger" onclick="deleteQuestionItem(this)">删除</button>
-                        </div>
-                    </div>
-                    `;
+        <div class="layui-form-item question-item">
+            <label class="layui-form-label">选择题</label>
+            <div class="layui-input-block">
+                <input type="text" name="choice_question[]" required lay-verify="required" placeholder="请输入题目" class="layui-input">
+                <input type="text" name="choice_option_a[]" required lay-verify="required" placeholder="选项A" class="layui-input">
+                <input type="text" name="choice_option_b[]" required lay-verify="required" placeholder="选项B" class="layui-input">
+                <input type="text" name="choice_option_c[]" required lay-verify="required" placeholder="选项C" class="layui-input">
+                <input type="text" name="choice_option_d[]" required lay-verify="required" placeholder="选项D" class="layui-input">
+                <input type="text" name="choice_answer[]" required lay-verify="required" placeholder="请输入答案" class="layui-input">
+                <input type="text" name="knowledge[]" required lay-verify="required" placeholder="请输入知识点" class="layui-input">
+                <button type="button" class="layui-btn layui-btn-xs layui-btn-danger" onclick="deleteQuestionItem(this)">删除</button>
+            </div>
+        </div>
+        `;
             } else if (type === 'fill') {
                 questionHtml = `
                     <div class="layui-form-item question-item">
@@ -70,6 +74,7 @@
 <div class="layui-input-block">
 <input type="text" name="fill_question[]" required lay-verify="required" placeholder="请输入题目" class="layui-input">
 <input type="text" name="fill_answer[]" required lay-verify="required" placeholder="请输入答案" class="layui-input">
+<input type="text" name="knowledge[]" required lay-verify="required" placeholder="请输入知识点" class="layui-input">
 <button type="button" class="layui-btn layui-btn-xs layui-btn-danger" onclick="deleteQuestionItem(this)">删除</button>
 </div>
 </div>`
@@ -82,6 +87,7 @@
                                placeholder="请输入题目" class="layui-input">
                             <textarea name="answer_answer[]" required lay-verify="required" placeholder="请输入答案"
                                       class="layui-textarea"></textarea>
+                                      <input type="text" name="knowledge[]" required lay-verify="required" placeholder="请输入知识点" class="layui-input">
                             <button type="button" class="layui-btn layui-btn-xs layui-btn-danger"
                                     onclick="deleteQuestionItem(this)">删除
                             </button>
@@ -100,23 +106,38 @@
 
         // 删除题目
         window.deleteQuestion = function () {
-            $('#questionContainer .question-item:last-child').remove();
+            $('#questionContainer .question-item').remove();
         }
-// 获取表单数据
+        // 获取表单数据
         window.getFormData = function () {
             var formData = {
                 choice: [],
                 fill: [],
-                answer: []
+                answer_content: []
             };
 
             // 获取选择题数据
             $('input[name="choice_question[]"]').each(function (index, item) {
                 var question = $(item).val();
-                var option = $('input[name="choice_option[]"]').eq(index).val();
+                var option_a = $('input[name="choice_option_a[]"]').eq(index).val();
+                var option_b = $('input[name="choice_option_b[]"]').eq(index).val();
+                var option_c = $('input[name="choice_option_c[]"]').eq(index).val();
+                var option_d = $('input[name="choice_option_d[]"]').eq(index).val();
                 var answer = $('input[name="choice_answer[]"]').eq(index).val();
-                formData.choice.push({question: question, option: option, answer: answer});
+                var knowledge = $('input[name="knowledge[]"]').eq(index).val();
+                formData.choice.push({
+                    question: question,
+                    options: {
+                        A: option_a,
+                        B: option_b,
+                        C: option_c,
+                        D: option_d
+                    },
+                    answer: answer,
+                    knowledge: knowledge
+                });
             });
+
 
             // 获取填空题数据
             $('input[name="fill_question[]"]').each(function (index, item) {
@@ -129,7 +150,7 @@
             $('input[name="answer_question[]"]').each(function (index, item) {
                 var question = $(item).val();
                 var answer = $('textarea[name="answer_answer[]"]').eq(index).val();
-                formData.answer.push({question: question, answer: answer});
+                formData.answer_content.push({question: question, answer: answer});
             });
 
             return formData;

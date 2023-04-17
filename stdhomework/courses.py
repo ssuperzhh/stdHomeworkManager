@@ -353,11 +353,11 @@ def student_file_upload_add():
         cursor = db.cursor()
         # 添加学生作业文件
         cursor.execute(f"INSERT INTO fileInfo (url, file_name, type, homework_id,stu_id) "
-                       f"VALUES ('{file_url}', '{filename}','{2}', {homework_id},'{stu_id}')",#1作业文件，2学生作业，3答案
+                       f"VALUES ('{file_url}', '{filename}','{2}', {homework_id},'{stu_id}')",  # 1作业文件，2学生作业，3答案
                        )
         cursor.execute(f"INSERT INTO student_homework (answer, state, homework_id,student_id) "
                        f"VALUES ('{file_url}', 'finished', {homework_id},'{stu_id}')",  # 1作业文件，2学生作业，3答案
-                       )#添加进学生作业表中
+                       )  # 添加进学生作业表中
         db.commit()
         cursor.close()
         return jsonify({'code': 200, 'msg': 'File uploaded successfully'}), 200
@@ -530,9 +530,57 @@ def auto_correct():
 def normal_homework_add():
     # 获取前端通过 Ajax 提交的数据
     data = request.get_json()
+    homework = data['homework']  # 作业基础数据
+    create_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    choice = data['choice']  # 选择题
+    fill = data['fill']  # 填空题
+    answer_content = data['answer_content']  # 解答题
+    homework_id = int(homework[0]['homework_id'])
 
-    # 处理前端提交的数据
-    # ... 根据需要进行相应的处理 ...
+    db = get_db()
+    cursor = db.cursor()
+    try:
+        # 先添加作业
+        cursor.execute(f"INSERT INTO homeworkinfo (homework_id, homework_name, date, type, course_id) "
+                       f"VALUES({homework_id}, '{homework[0]['homework_name']}', '{create_time}', "
+                       f"'{homework[0]['homework_type']}', {homework[0]['course_id']})")
+        for i in range(len(choice)):
+            answer = choice[i]['answer']
+            knowledge = choice[i]['knowledge']
+            question = choice[i]['question']
+            A = choice[i]['options']['A']
+            B = choice[i]['options']['B']
+            C = choice[i]['options']['C']
+            D = choice[i]['options']['D']
+            # 添加选择题
+            choice_sql = f'INSERT INTO questioninfo (question,a,b,c,d,truth,type,knowledge,homework_id) ' \
+                         f'VALUES("{question}", "{A}", "{B}", "{C}", "{D}", "{answer}", 1, "{knowledge}", {homework_id})'
+            cursor.execute(choice_sql)
 
-    # 返回响应，可以使用 jsonify 函数将数据转为 JSON 格式
-    return jsonify({'result': 'success', 'message': '数据提交成功'})
+        for i in range(len(fill)):
+            answer = choice[i]['answer']
+            knowledge = choice[i]['knowledge']
+            question = choice[i]['question']
+            # 添加填空题
+            fill_sql = f'INSERT INTO questioninfo (question,truth,type,knowledge,homework_id) ' \
+                       f'VALUES("{question}","{answer}", 2, "{knowledge}", {homework_id})'
+            cursor.execute(fill_sql)
+
+        for i in range(len(answer_content)):
+            answer = choice[i]['answer']
+            knowledge = choice[i]['knowledge']
+            question = choice[i]['question']
+            # 添加解答
+            answer_content_sql = f'INSERT INTO questioninfo (question,truth,type,knowledge,homework_id) ' \
+                                 f'VALUES ("{question}","{answer}", 3, "{knowledge}", {homework_id})'
+            cursor.execute(answer_content_sql)
+
+        db.commit()
+        cursor.close()
+        return jsonify({'code': 201, 'msg': '数据提交成功'}), 200
+    except Exception as e:
+        # 如果出现异常，回滚并关闭游标
+        db.rollback()
+        cursor.close()
+        # 返回错误信息
+        return jsonify({'code': 500, 'msg': str(e)})
