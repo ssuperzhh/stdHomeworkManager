@@ -63,13 +63,13 @@
 
         table.on('tool(currentTableFilter)', function (obj) {
             var data = obj.data;
+            sessionStorage.setItem('homework', JSON.stringify(data))
             if (obj.event === 'correct') {
                 if (data.type == 'excel') {
                     if (data.state == 'finished')//表示已完成作业
                     {
                         layer.alert('作业已完成，不允许修改');
                     } else {
-                        sessionStorage.setItem('homework',JSON.stringify(data))
                         var index = layer.open({
                             title: '作业详情',
                             type: 2,
@@ -85,18 +85,23 @@
                     }
 
                 } else {
-                    var index = layer.open({
-                        title: '编辑课程公告',
-                        type: 2,
-                        shade: 0.2,
-                        maxmin: true,
-                        shadeClose: true,
-                        area: ['100%', '100%'],
-                        content: './current_homework_correct.html',
-                    });
-                    $(window).on("resize", function () {
-                        layer.full(index);
-                    });
+                    if (data.state == 'finished')//表示已完成作业
+                    {
+                        layer.alert('作业已完成，不允许修改');
+                    } else {
+                        var index = layer.open({
+                            title: '完成作业',
+                            type: 2,
+                            shade: 0.2,
+                            maxmin: true,
+                            shadeClose: true,
+                            area: ['100%', '100%'],
+                            content: './normal_homework.html',
+                        });
+                        $(window).on("resize", function () {
+                            layer.full(index);
+                        });
+                    }
                 }
                 return false;
             }

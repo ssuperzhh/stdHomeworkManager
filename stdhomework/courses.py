@@ -584,3 +584,62 @@ def normal_homework_add():
         cursor.close()
         # 返回错误信息
         return jsonify({'code': 500, 'msg': str(e)})
+
+
+@bp.route('/get_normal_homework/<int:homework_id>', methods=['GET'])
+def get_normal_homework(homework_id):
+    db = get_db()
+    cursor = db.cursor()
+
+    try:
+        choice_sql = f'SELECT * FROM questioninfo WHERE homework_id={homework_id} AND type=1'  # 获取选择题
+        cursor.execute(choice_sql)
+        choice_question = cursor.fetchall()
+        fill_sql = f'SELECT * FROM questioninfo WHERE homework_id={homework_id} AND type=2'  # 获取填空题
+        cursor.execute(fill_sql)
+        fill_question = cursor.fetchall()
+        content_sql = f'SELECT * FROM questioninfo WHERE homework_id={homework_id} AND type=3'  # 获取解答题
+        cursor.execute(content_sql)
+        content_question = cursor.fetchall()
+        questions = {}
+        questions['choice_question'] = choice_question
+        questions['fill_question'] = fill_question
+        questions['content_question'] = content_question
+        return jsonify({'code': 0, 'msg': '', 'data': questions, 'count': len(questions)}), 200
+    except Exception as e:
+        # 如果出现异常，回滚并关闭游标
+        db.rollback()
+        cursor.close()
+        # 返回错误信息
+        return jsonify({'code': 500, 'msg': str(e)})
+
+
+@bp.route('/student_question_add', methods=['POST'])
+def student_question_add():
+    # 获取前端通过 Ajax 提交的数据
+    data = request.get_json()
+    student_id = data['student_id']  # 作业基础数据
+    homework_id = data['homework_id']  # 作业基础数据
+    data.pop('student_id')
+    data.pop('homework_id')
+    db = get_db()
+    cursor = db.cursor()
+    try:
+        for key, value in data.items():
+            question_id = int(key.split('_')[1])
+            sql = f'INSERT INTO student_question(answer,question_id,student_id) VALUES (%s,%s,%s)'
+            values = (value, question_id, student_id)
+            cursor.execute(sql, values)
+
+        cursor.execute(f"INSERT INTO student_homework (state, homework_id,student_id) "
+                       f"VALUES ('finished', {homework_id},'{student_id}')",
+                       )  # 添加进学生作业表中
+        db.commit()
+        cursor.close()
+        return jsonify({'code': 200, 'msg': '数据提交成功'}), 200
+    except Exception as e:
+        # 如果出现异常，回滚并关闭游标
+        db.rollback()
+        cursor.close()
+        # 返回错误信息
+        return jsonify({'code': 500, 'msg': str(e)})
