@@ -554,16 +554,15 @@ def auto_correct():
         db = get_db()
         cursor = db.cursor()
         homework_id = request.args.get('homework_id')
-        cursor.execute(f'SELECT filename FROM fileinfo WHERE homework_id={homework_id} AND stu_id=null')
-        filename = cursor.fetchone()
-        pattern = r'###(\d+)-' + re.escape(filename) + ':\n[\s\S]*Total:(\d+\.\d+)'
+        cursor.execute(f'SELECT file_name FROM fileinfo WHERE homework_id={homework_id} AND stu_id IS NULL ')
+        filename = cursor.fetchone()['file_name']
+        escaped_filename = re.escape(filename)
+        pattern = r'###(\d+)-' + escaped_filename + r':\n[\s\S]*?Total:(\d+\.\d+)'
         matches = re.findall(pattern, content)
-
-        results = []
         for match in matches:
             student_id = match[0]
-            score = match[1]
-            sql = f'UPDATE student_homework SET score={score} WHERE homework_id={homework_id} AND student_id="{student_id}"'
+            total_score = float(match[1])
+            sql = f'UPDATE student_homework SET score={total_score} WHERE homework_id={homework_id} AND student_id="{student_id}"'
             cursor.execute(sql)
         db.commit()
         cursor.close()
