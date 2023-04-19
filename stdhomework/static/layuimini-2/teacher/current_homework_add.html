@@ -40,11 +40,19 @@
         </div>
     </div>
     <div class="layui-form-item" id="file-upload" style="display: none">
-        <label class="layui-form-label">上传文件</label>
+        <label class="layui-form-label">上传作业文件</label>
         <div class="layui-input-block">
             <button type="button" class="layui-btn" id="test-upload-normal">选择文件</button>
             <input type="text" style="width: auto" class="layui-input layui-disabled" id="upload-file-name" readonly>
             <button type="button" class="layui-btn layui-btn-danger layui-hide" id="test-upload-reload">重传</button>
+        </div>
+    </div>
+    <div class="layui-form-item" id="file-answer" style="display: none">
+        <label class="layui-form-label">上传答案文件</label>
+        <div class="layui-input-block">
+            <button type="button" class="layui-btn" id="test-answer-normal">选择文件</button>
+            <input type="text" style="width: auto" class="layui-input layui-disabled" id="upload-file-answer" readonly>
+            <button type="button" class="layui-btn layui-btn-danger layui-hide" id="answer-upload-reload">重传</button>
         </div>
     </div>
     <div class="layui-form-item" id="normal-homework" style="display: none">
@@ -123,6 +131,30 @@
                 formData = new FormData();
             }
         });
+        upload.render({
+            elem: '#test-answer-normal',
+            url: '/courses/upload',
+            accept: 'file',
+            //auto: false, // 不自动上传
+            size: 0,
+            //bindAction: '#submit-btn', // 将文件上传和表单提交关联起来
+            choose: function (obj) {
+                //将每次选择的文件追加到文件队列
+                var files = obj.pushFile();
+                //预读本地文件，如果是多文件，则会遍历。(不支持ie8/9)
+                obj.preview(function (index, file, result) {
+                    //console.log(file); //得到文件对象
+                    $('#upload-file-answer').val(file.name);
+                });
+            },
+            done: function (res) {
+                console.log(res);
+            },
+            error: function () {
+                // 上传失败
+                formData = new FormData();
+            }
+        });
         form.on('radio(radio_filter)', function (data) {
             //console.log(data.elem); //得到radio原始DOM对象
             console.log(data.value); //被点击的radio的value值
@@ -130,8 +162,10 @@
                 $('#normal-homework').hide();
                 $('#submit-btn').show();
                 $('#file-upload').show();
+                $('#file-answer').show();
             } else if (data.value == 'normal') {
                 $('#file-upload').hide();
+                $('#file-answer').hide();
                 $('#submit-btn').hide();
                 $('#normal-homework').show();
                 // var index = layer.open({
@@ -285,7 +319,7 @@
                     },
                     answer: answer,
                     knowledge: knowledge,
-                    score:score
+                    score: score
                 });
             });
 
@@ -296,7 +330,7 @@
                 var answer = $('input[name="fill_answer[]"]').eq(index).val();
                 var knowledge = $('input[name="fill_knowledge[]"]').eq(index).val();
                 var score = $('input[name="fill_score[]"]').eq(index).val();
-                formData.fill.push({question: question, answer: answer, knowledge: knowledge,score:score});
+                formData.fill.push({question: question, answer: answer, knowledge: knowledge, score: score});
             });
 
             // 获取解答题数据
@@ -305,7 +339,7 @@
                 var answer = $('textarea[name="answer_answer[]"]').eq(index).val();
                 var knowledge = $('input[name="answer_knowledge[]"]').eq(index).val();
                 var score = $('input[name="answer_score[]"]').eq(index).val();
-                formData.answer_content.push({question: question, answer: answer, knowledge: knowledge,score:score});
+                formData.answer_content.push({question: question, answer: answer, knowledge: knowledge, score: score});
             });
 
             return formData;
