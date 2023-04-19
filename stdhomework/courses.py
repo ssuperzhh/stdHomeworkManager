@@ -121,7 +121,7 @@ def delete_course_notice_notice():
 def get_course_homeworks(course_id):
     db = get_db()
     try:
-        sql = f'SELECT A.*,B.state FROM homeworkinfo A ' \
+        sql = f'SELECT A.*,B.state,B.score FROM homeworkinfo A ' \
               f'LEFT JOIN student_homework B ON A.homework_id=B.homework_id ' \
               f'WHERE course_id = "{course_id}"'
         cursor = db.cursor()

@@ -10,14 +10,7 @@
 </head>
 <body>
 <div class="layui-container">
-    <form class="layui-form" lay-filter="quizForm">
-        <div class="layui-form-item">
-            <div class="layui-input-block" style="width: 250px;">
-                <select name="mySelect" id="mySelect" lay-filter="filter">
-                    <option value="">请选择学生</option>
-                </select>
-            </div>
-        </div>
+    <form class="layui-form" lay-filter="quizCorrectedForm">
         <div class="layui-tab">
             <ul class="layui-tab-title">
                 <li class="layui-this">选择题</li>
@@ -31,8 +24,9 @@
             </div>
         </div>
         <div class="layui-form-item">
-            <div class="layui-input-block">
-                <button class="layui-btn" lay-submit lay-filter="quizSubmit">提交</button>
+            <label class="layui-form-label">总得分</label>
+            <div class="layui-input-block" style="width: 100px;">
+                <input type="text" name="score" value="" class="layui-input" readonly required>
             </div>
         </div>
     </form>
@@ -45,54 +39,34 @@
         var layer = layui.layer;
         var homework = JSON.parse(sessionStorage.getItem('homework'))
         $.ajax({
-            url: '/admin/students',
+            url: '/student/get_student_homework/' + homework.homework_id + '/' + JSON.parse(sessionStorage.getItem('editingStudent')).stu_id,
             type: 'get',
             async: false,
             dataType: 'json',
-            success: function (res) {
-                data = res.data;
-                // 渲染下拉框
-                var selectHtml = '';
-                for (var i = 0; i < data.length; i++) {
-                    selectHtml += '<option value="' + data[i].stu_id + '">' + data[i].class_name + ':' + data[i].name + '</option>';
+            success: function (r) {
+                console.log(r.data);
+                var result = {};
+                for (var i = 0; i < r.data.length; i++) {
+                    var obj = r.data[i];
+                    result[obj.question_id] = obj.answer;
                 }
-                $('#mySelect').html(selectHtml);
-                layui.form.render();  // 重新渲染 layui 表单组件
-            }
-        });
-        form.on('select(filter)', function (data) {
-            //console.log(data.elem); //得到select原始DOM对象
-            //console.log(data.value); //得到被选中的值
-            //console.log(data.othis); //得到美化后的DOM对象
-            $.ajax({
-                url: '/student/get_student_homework/' + homework.homework_id + '/' + data.value,
-                type: 'get',
-                async: false,
-                dataType: 'json',
-                success: function (r) {
-                    console.log(r.data);
-                    var result = {};
-                    for (var i = 0; i < r.data.length; i++) {
-                        var obj = r.data[i];
-                        result[obj.question_id] = obj.answer;
-                    }
-                    console.log(result);
-                    // 通过 Ajax 请求获取题目数据
-                    $.ajax({
-                        url: '/courses/get_normal_homework/' + homework.homework_id,
-                        type: 'GET',
-                        dataType: 'json',
-                        success: function (res) {
-                            if (res.code === 0) {
-                                var choiceQuestionData = res.data.choice_question;
-                                var fillQuestionData = res.data.fill_question;
-                                var essayQuestionData = res.data.content_question;
-                                console.log(choiceQuestionData);
-                                // 动态加载选择题
-                                var choiceQuestionHtml = '';
-                                for (var i = 0; i < choiceQuestionData.length; i++) {
-                                    var question = choiceQuestionData[i];
-                                    var questionHtml = `
+                console.log(result);
+                // 通过 Ajax 请求获取题目数据
+                $.ajax({
+                    url: '/courses/get_normal_homework/' + homework.homework_id,
+                    type: 'GET',
+                    dataType: 'json',
+                    success: function (res) {
+                        if (res.code === 0) {
+                            var choiceQuestionData = res.data.choice_question;
+                            var fillQuestionData = res.data.fill_question;
+                            var essayQuestionData = res.data.content_question;
+                            console.log(choiceQuestionData);
+                            // 动态加载选择题
+                            var choiceQuestionHtml = '';
+                            for (var i = 0; i < choiceQuestionData.length; i++) {
+                                var question = choiceQuestionData[i];
+                                var questionHtml = `
                                 <div class="layui-form-item">
                                     <label class="layui-form-label">${question.question}</label>
                                     <div class="layui-input-block">
@@ -101,88 +75,61 @@
                                         <input type="radio" name="choice_${question.id}" value="C" title="${question.c}"${result[question.id] === 'C' ? "checked" : "disabled"} >
                                         <input type="radio" name="choice_${question.id}" value="D" title="${question.d}"${result[question.id] === 'D' ? "checked" : "disabled"} >
                                     </div>
+                                    <button type="button" class="layui-btn layui-btn-sm layui-btn-danger">相似题型推荐</button>
                                     </div>`
-                                    ;
-                                    choiceQuestionHtml += questionHtml;
-                                }
-                                $('#choiceQuestionContainer').html(choiceQuestionHtml);
-                                form.render('radio');
+                                ;
+                                choiceQuestionHtml += questionHtml;
+                            }
+                            $('#choiceQuestionContainer').html(choiceQuestionHtml);
+                            form.render('radio');
 
-                                // 动态加载填空题
-                                var fillQuestionHtml = '';
-                                for (var j = 0; j < fillQuestionData.length; j++) {
-                                    var question = fillQuestionData[j];
-                                    var questionHtml =
-                                        `
+                            // 动态加载填空题
+                            var fillQuestionHtml = '';
+                            for (var j = 0; j < fillQuestionData.length; j++) {
+                                var question = fillQuestionData[j];
+                                var questionHtml =
+                                    `
                                     <div class="layui-form-item">
                                     <label class="layui-form-label">${question.question}</label>
                                     <div class="layui-input-block">
                                     <input type="text" name="fill_${question.id}" value="${result[question.id]}" class="layui-input" readonly>
+                                    <button type="button" class="layui-btn layui-btn-sm layui-btn-danger">相似题型推荐</button>
                                     </div>
                                     </div>`
-                                    ;
-                                    fillQuestionHtml += questionHtml;
-                                }
-                                $('#fillQuestionContainer').html(fillQuestionHtml);
-                                // 动态加载解答题
-                                var essayQuestionHtml = '';
-                                for (var k = 0; k < essayQuestionData.length; k++) {
-                                    var question = essayQuestionData[k];
-                                    var questionHtml =
-                                        `
+                                ;
+                                fillQuestionHtml += questionHtml;
+                            }
+                            $('#fillQuestionContainer').html(fillQuestionHtml);
+                            // 动态加载解答题
+                            var essayQuestionHtml = '';
+                            for (var k = 0; k < essayQuestionData.length; k++) {
+                                var question = essayQuestionData[k];
+                                var questionHtml =
+                                    `
                                     <div class="layui-form-item">
                                     <label class="layui-form-label">${question.question}</label>
                                     <div class="layui-input-block">
                                     <textarea name="essay_${question.id}" class="layui-textarea" readonly>${result[question.id]}</textarea>
+                                    <button type="button" class="layui-btn layui-btn-sm layui-btn-danger">相似题型推荐</button>
                                     </div>
                                     </div>`
-                                    ;
-                                    essayQuestionHtml += questionHtml;
-                                }
-                                $('#essayQuestionContainer').html(essayQuestionHtml);
-                                form.render();
-                            } else {
-                                layer.msg(res.msg, {icon: 2, time: 2000});
+                                ;
+                                essayQuestionHtml += questionHtml;
                             }
-                        },
-                        error: function () {
-                            layer.msg('获取题目数据失败', {icon: 2, time: 2000});
+                            $('#essayQuestionContainer').html(essayQuestionHtml);
+                            form.render();
+                        } else {
+                            layer.msg(res.msg, {icon: 2, time: 2000});
                         }
-                    });
-                }
-            });
+                    },
+                    error: function () {
+                        layer.msg('获取题目数据失败', {icon: 2, time: 2000});
+                    }
+                });
+            }
         });
-
-
-        // 监听表单提交
-        form.on('submit(quizSubmit)', function (data) {
-            //console.log(data.field);
-            data.field.student_id = JSON.parse(sessionStorage.getItem('editingStudent')).stu_id;
-            data.field.homework_id = homework.homework_id;
-            $.ajax({
-                type: 'POST',
-                url: '/courses/student_question_add',  // 接口 URL
-                contentType: 'application/json',
-                async: false,
-                data: JSON.stringify(data.field),  // 将 JSON 对象转为 JSON 字符串
-                success: function (res) {
-                    if (res.code == '200') {
-                        var index = layer.alert('提交成功!', function () {
-                            // 关闭弹出层
-                            layer.close(index);
-                            var iframeIndex = parent.layer.getFrameIndex(window.name);
-                            parent.reloadTable();
-                            parent.layer.close(iframeIndex);
-                        });
-                    } else
-                        var index = layer.alert('失败!' + res.msg);
-                },
-                error: function (xhr, status, error) {
-                    console.log(error);
-                    layer.alert('错误,加载数据出错：' + error);
-                }
-            });
-            return false; // 阻止表单提交
+        form.val("quizCorrectedForm", { //formTest 即 class="layui-form" 所在元素属性 lay-filter="" 对应的值
+            "score": homework.score
         });
     });
 </script>

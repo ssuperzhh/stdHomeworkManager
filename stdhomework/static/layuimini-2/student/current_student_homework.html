@@ -50,9 +50,10 @@
             cols: [[
                 {field: 'homework_id', title: '作业编号', width: '10%'},
                 {field: 'homework_name', title: '作业名', width: '20%'},
-                {field: 'type', title: '作业类型', width: '20%'},
+                {field: 'type', title: '作业类型', width: '10%'},
                 {field: 'course_id', title: '所属课程id', width: '10%'},
                 {field: 'state', title: '作业状态', width: '10%'},
+                {field: 'score', title: '作业分数', width: '10%'},
                 {title: '操作', minWidth: 40, toolbar: '#currentTableBar', align: "center"}
             ]],
             limits: [10, 15, 20, 25, 50, 100],
@@ -87,17 +88,20 @@
                 } else {
                     if (data.state == 'finished')//表示已完成作业
                     {
-                        var index = layer.open({
-                            title: '查看作业',
-                            type: 2,
-                            shade: 0.2,
-                            maxmin: true,
-                            shadeClose: true,
-                            area: ['100%', '100%'],
-                            content: './corrected_homework.html',
-                        });
-                        $(window).on("resize", function () {
-                            layer.full(index);
+                        layer.confirm('i作业已完成,是否查看?', {icon: 3, title: '提示'}, function (i) {
+                            var index = layer.open({
+                                title: '查看作业',
+                                type: 2,
+                                shade: 0.2,
+                                maxmin: true,
+                                shadeClose: true,
+                                area: ['100%', '100%'],
+                                content: './corrected_homework.html',
+                            });
+                            $(window).on("resize", function () {
+                                layer.full(index);
+                            });
+                            layer.close(i);
                         });
                     } else {
                         var index = layer.open({
