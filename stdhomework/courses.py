@@ -558,18 +558,18 @@ def normal_homework_add():
             cursor.execute(choice_sql)
 
         for i in range(len(fill)):
-            answer = choice[i]['answer']
-            knowledge = choice[i]['knowledge']
-            question = choice[i]['question']
+            answer = fill[i]['answer']
+            knowledge = fill[i]['knowledge']
+            question = fill[i]['question']
             # 添加填空题
             fill_sql = f'INSERT INTO questioninfo (question,truth,type,knowledge,homework_id) ' \
                        f'VALUES("{question}","{answer}", 2, "{knowledge}", {homework_id})'
             cursor.execute(fill_sql)
 
         for i in range(len(answer_content)):
-            answer = choice[i]['answer']
-            knowledge = choice[i]['knowledge']
-            question = choice[i]['question']
+            answer = answer_content[i]['answer']
+            knowledge = answer_content[i]['knowledge']
+            question = answer_content[i]['question']
             # 添加解答
             answer_content_sql = f'INSERT INTO questioninfo (question,truth,type,knowledge,homework_id) ' \
                                  f'VALUES ("{question}","{answer}", 3, "{knowledge}", {homework_id})'
