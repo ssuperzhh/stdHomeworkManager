@@ -121,8 +121,7 @@ def delete_course_notice_notice():
 def get_course_homeworks(course_id):
     db = get_db()
     try:
-        sql = f'SELECT A.*,B.state,B.score FROM homeworkinfo A ' \
-              f'LEFT JOIN student_homework B ON A.homework_id=B.homework_id ' \
+        sql = f'SELECT A.* FROM homeworkinfo A ' \
               f'WHERE course_id = "{course_id}"'
         cursor = db.cursor()
         cursor.execute(sql)
@@ -141,7 +140,7 @@ def get_course_homeworks(course_id):
         return jsonify({'code': 500, 'msg': str(e)})
 
 
-# 获取当前课程下的作业
+# 获取当前课程下的学生作业
 @bp.route('/get_student_homeworks/<int:course_id>/<string:student_id>', methods=['GET'])
 def get_student_homeworks(course_id, student_id):
     db = get_db()
