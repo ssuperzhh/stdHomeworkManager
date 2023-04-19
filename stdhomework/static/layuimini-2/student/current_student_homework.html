@@ -40,7 +40,7 @@
         var cur_course = JSON.parse(sessionStorage.getItem('current_student_course'));
         table.render({
             elem: '#currentTableId',
-            url: '/courses/homeworks/' + cur_course.course_id,
+            url: '/courses/get_student_homeworks/' + cur_course.course_id +'/'+ JSON.parse(sessionStorage.getItem('editingStudent')).stu_id,
             toolbar: '#toolbarDemo',
             defaultToolbar: ['filter', 'exports', 'print', {
                 title: '提示',

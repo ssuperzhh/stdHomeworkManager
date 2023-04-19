@@ -141,6 +141,31 @@ def get_course_homeworks(course_id):
         return jsonify({'code': 500, 'msg': str(e)})
 
 
+# 获取当前课程下的作业
+@bp.route('/get_student_homeworks/<int:course_id>/<string:student_id>', methods=['GET'])
+def get_student_homeworks(course_id, student_id):
+    db = get_db()
+    try:
+        sql = f'SELECT A.*,B.state,B.score FROM homeworkinfo A ' \
+              f'LEFT JOIN student_homework B ON A.homework_id=B.homework_id AND B.student_id="{student_id}"' \
+              f'WHERE course_id = "{course_id}"'
+        cursor = db.cursor()
+        cursor.execute(sql)
+        db.commit()
+        result = cursor.fetchall()
+        if not result:
+            return jsonify({'code': 404, 'msg': '未找到该课程下的作业'})
+        return jsonify({"code": 0, 'msg': "", 'count': len(result), 'data': result})
+
+    except Exception as e:
+        # 如果出现异常，回滚并关闭游标
+        db.rollback()
+        cursor.close()
+
+        # 返回错误信息
+        return jsonify({'code': 500, 'msg': str(e)})
+
+
 # 添加课程作业
 @bp.route('/homeworks', methods=['POST'])
 def create_course_homeworks():
@@ -522,25 +547,26 @@ def auto_correct():
         # Save the score workbook
         score_wb.save(score_file)
 
-        #取到分数存入学生作业表
+        # 取到分数存入学生作业表
         with open(result_file, 'r') as f:
             content = f.read()
 
-        start_index = content.find('201902320202')
-        total_index = content.find('Total:', start_index)
-        next_line_index = content.find('\n', total_index)
-        score = content[total_index + len('Total:'):next_line_index].strip()
-
-        homework_id = request.args.get('homework_id')
-        student_id = "201902320202"
-
         db = get_db()
         cursor = db.cursor()
-        sql = f'UPDATE student_homework SET score={score} WHERE homework_id={homework_id} AND student_id="{student_id}"'
-        cursor.execute(sql)
-        cursor.close()
-        db.commit()
+        homework_id = request.args.get('homework_id')
+        cursor.execute(f'SELECT filename FROM fileinfo WHERE homework_id={homework_id} AND stu_id=null')
+        filename = cursor.fetchone()
+        pattern = r'###(\d+)-' + re.escape(filename) + ':\n[\s\S]*Total:(\d+\.\d+)'
+        matches = re.findall(pattern, content)
 
+        results = []
+        for match in matches:
+            student_id = match[0]
+            score = match[1]
+            sql = f'UPDATE student_homework SET score={score} WHERE homework_id={homework_id} AND student_id="{student_id}"'
+            cursor.execute(sql)
+        db.commit()
+        cursor.close()
         return jsonify({'code': 200, 'msg': 'Results written to result.txt"'}), 200
 
     except Exception as e:
@@ -653,7 +679,7 @@ def student_question_add():
         for key, value in data.items():
             question_id = int(key.split('_')[1])
             sql = f'INSERT INTO student_question(answer,question_id,student_id,homework_id) VALUES (%s,%s,%s,%s)'
-            values = (value, question_id, student_id,homework_id)
+            values = (value, question_id, student_id, homework_id)
             cursor.execute(sql, values)
 
         cursor.execute(f"INSERT INTO student_homework (state, homework_id,student_id) "
