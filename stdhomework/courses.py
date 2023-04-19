@@ -548,31 +548,34 @@ def normal_homework_add():
             answer = choice[i]['answer']
             knowledge = choice[i]['knowledge']
             question = choice[i]['question']
+            question_score = choice[i]['score']
             A = choice[i]['options']['A']
             B = choice[i]['options']['B']
             C = choice[i]['options']['C']
             D = choice[i]['options']['D']
             # 添加选择题
-            choice_sql = f'INSERT INTO questioninfo (question,a,b,c,d,truth,type,knowledge,homework_id) ' \
-                         f'VALUES("{question}", "{A}", "{B}", "{C}", "{D}", "{answer}", 1, "{knowledge}", {homework_id})'
+            choice_sql = f'INSERT INTO questioninfo (question,a,b,c,d,truth,type,knowledge,homework_id,question_score) ' \
+                         f'VALUES("{question}", "{A}", "{B}", "{C}", "{D}", "{answer}", 1, "{knowledge}", {homework_id}, "{question_score}")'
             cursor.execute(choice_sql)
 
         for i in range(len(fill)):
             answer = fill[i]['answer']
             knowledge = fill[i]['knowledge']
             question = fill[i]['question']
+            question_score = fill[i]['score']
             # 添加填空题
-            fill_sql = f'INSERT INTO questioninfo (question,truth,type,knowledge,homework_id) ' \
-                       f'VALUES("{question}","{answer}", 2, "{knowledge}", {homework_id})'
+            fill_sql = f'INSERT INTO questioninfo (question,truth,type,knowledge,homework_id,question_score) ' \
+                       f'VALUES("{question}","{answer}", 2, "{knowledge}", {homework_id}, "{question_score}")'
             cursor.execute(fill_sql)
 
         for i in range(len(answer_content)):
             answer = answer_content[i]['answer']
             knowledge = answer_content[i]['knowledge']
             question = answer_content[i]['question']
+            question_score = answer_content[i]['score']
             # 添加解答
-            answer_content_sql = f'INSERT INTO questioninfo (question,truth,type,knowledge,homework_id) ' \
-                                 f'VALUES ("{question}","{answer}", 3, "{knowledge}", {homework_id})'
+            answer_content_sql = f'INSERT INTO questioninfo (question,truth,type,knowledge,homework_id,question_score) ' \
+                                 f'VALUES ("{question}","{answer}", 3, "{knowledge}", {homework_id}, "{question_score}")'
             cursor.execute(answer_content_sql)
 
         db.commit()
@@ -627,8 +630,8 @@ def student_question_add():
     try:
         for key, value in data.items():
             question_id = int(key.split('_')[1])
-            sql = f'INSERT INTO student_question(answer,question_id,student_id) VALUES (%s,%s,%s)'
-            values = (value, question_id, student_id)
+            sql = f'INSERT INTO student_question(answer,question_id,student_id,homework_id) VALUES (%s,%s,%s,%s)'
+            values = (value, question_id, student_id,homework_id)
             cursor.execute(sql, values)
 
         cursor.execute(f"INSERT INTO student_homework (state, homework_id,student_id) "

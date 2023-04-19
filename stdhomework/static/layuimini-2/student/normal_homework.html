@@ -109,9 +109,9 @@
 
         // 监听表单提交
         form.on('submit(quizSubmit)', function (data) {
-            //console.log(data.field);
             data.field.student_id = JSON.parse(sessionStorage.getItem('editingStudent')).stu_id;
             data.field.homework_id = homework.homework_id;
+            //console.log(data.field);
             $.ajax({
                 type: 'POST',
                 url: '/courses/student_question_add',  // 接口 URL
