@@ -58,3 +58,50 @@ def update_teacher(tea_id):
 
     # 返回成功信息
     return jsonify({'code': 200, 'msg': f'ID 为 {tea_id} 的密码已更新'})
+
+
+# 答案自动批阅
+@bp.route('/correct/<int:homework_id>/<string:student_id>', methods=['GET'])
+def correct_normal_homework(homework_id, student_id):
+    db = get_db()
+    cursor = db.cursor()
+    score = 0
+    try:
+        cursor.execute(f'SELECT * FROM student_question WHERE homework_id={homework_id} and student_id="{student_id}"')
+        stu_homework = cursor.fetchall()
+        cursor.execute(f'SELECT * FROM questioninfo WHERE homework_id={homework_id}')
+        question_info = cursor.fetchall()
+        for item in stu_homework:
+            for jtem in question_info:
+                if jtem['id'] == item['question_id']:
+                    if item['answer'] == jtem['truth']:
+                        score += jtem['question_score']
+
+        cursor.close()
+        # 返回成功信息
+        return jsonify({'code': 200, 'msg': '', 'score': score})
+    except Exception as e:
+        return jsonify({'code': 500, 'msg': str(e)})
+
+
+# 将批阅的分数提交
+@bp.route('/submit_score', methods=['POST'])
+def submit_score():
+    db = get_db()
+    cursor = db.cursor()
+    # 解析请求中的 JSON 数据
+    data = request.get_json()
+    homework_id = data['homework_id']
+    student_id = data['student_id']
+    score = data['score']
+    try:
+        sql = f'UPDATE student_homework SET score={score} WHERE homework_id={homework_id} AND student_id="{student_id}"'
+        cursor.execute(sql)
+        cursor.close()
+        db.commit()
+        # 返回成功信息
+        return jsonify({'code': 200, 'msg': f'分数为{score},批改成功'})
+    except Exception as e:
+        db.rollback()
+        cursor.close()
+        return jsonify({'code': 500, 'msg': str(e)})

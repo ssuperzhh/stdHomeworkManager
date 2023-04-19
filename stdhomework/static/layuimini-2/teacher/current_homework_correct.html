@@ -10,7 +10,7 @@
 </head>
 <body>
 <div class="layui-container">
-    <form class="layui-form" lay-filter="quizForm">
+    <form class="layui-form" lay-filter="quizCorrectForm">
         <div class="layui-form-item">
             <div class="layui-input-block" style="width: 250px;">
                 <select name="mySelect" id="mySelect" lay-filter="filter">
@@ -28,6 +28,12 @@
                 <div class="layui-tab-item layui-show" id="choiceQuestionContainer"></div>
                 <div class="layui-tab-item" id="fillQuestionContainer"></div>
                 <div class="layui-tab-item" id="essayQuestionContainer"></div>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">总得分</label>
+            <div class="layui-input-block" style="width: 100px;">
+                <input type="text" name="score" value="" class="layui-input" required>
             </div>
         </div>
         <div class="layui-form-item">
@@ -70,13 +76,13 @@
                 async: false,
                 dataType: 'json',
                 success: function (r) {
-                    console.log(r.data);
+                    //console.log(r.data);
                     var result = {};
                     for (var i = 0; i < r.data.length; i++) {
                         var obj = r.data[i];
                         result[obj.question_id] = obj.answer;
                     }
-                    console.log(result);
+                    //console.log(result);
                     // 通过 Ajax 请求获取题目数据
                     $.ajax({
                         url: '/courses/get_normal_homework/' + homework.homework_id,
@@ -87,7 +93,7 @@
                                 var choiceQuestionData = res.data.choice_question;
                                 var fillQuestionData = res.data.fill_question;
                                 var essayQuestionData = res.data.content_question;
-                                console.log(choiceQuestionData);
+                                //console.log(choiceQuestionData);
                                 // 动态加载选择题
                                 var choiceQuestionHtml = '';
                                 for (var i = 0; i < choiceQuestionData.length; i++) {
@@ -151,28 +157,16 @@
                     });
                 }
             });
-        });
-
-
-        // 监听表单提交
-        form.on('submit(quizSubmit)', function (data) {
-            //console.log(data.field);
-            data.field.student_id = JSON.parse(sessionStorage.getItem('editingStudent')).stu_id;
-            data.field.homework_id = homework.homework_id;
             $.ajax({
-                type: 'POST',
-                url: '/courses/student_question_add',  // 接口 URL
+                type: 'GET',
+                url: '/teacher/correct/' + homework.homework_id + '/' + data.value,  // 接口 URL
                 contentType: 'application/json',
                 async: false,
-                data: JSON.stringify(data.field),  // 将 JSON 对象转为 JSON 字符串
                 success: function (res) {
                     if (res.code == '200') {
-                        var index = layer.alert('提交成功!', function () {
-                            // 关闭弹出层
-                            layer.close(index);
-                            var iframeIndex = parent.layer.getFrameIndex(window.name);
-                            parent.reloadTable();
-                            parent.layer.close(iframeIndex);
+                        //给表单赋值
+                        form.val("quizCorrectForm", { //formTest 即 class="layui-form" 所在元素属性 lay-filter="" 对应的值
+                            "score": res.score
                         });
                     } else
                         var index = layer.alert('失败!' + res.msg);
@@ -182,7 +176,36 @@
                     layer.alert('错误,加载数据出错：' + error);
                 }
             });
-            return false; // 阻止表单提交
+            // 监听表单提交
+            form.on('submit(quizSubmit)', function (submit_data) {
+                submit_data.field.homework_id = homework.homework_id;
+                submit_data.field.student_id = data.value;
+                console.log(submit_data.field);
+                $.ajax({
+                    type: 'POST',
+                    url: '/teacher/submit_score',  // 接口 URL
+                    contentType: 'application/json',
+                    async: false,
+                    data: JSON.stringify(submit_data.field),  // 将 JSON 对象转为 JSON 字符串
+                    success: function (res) {
+                        if (res.code == '200') {
+                            var index = layer.alert('批改成功!', function () {
+                                // 关闭弹出层
+                                layer.close(index);
+                                var iframeIndex = parent.layer.getFrameIndex(window.name);
+                                parent.reloadTable();
+                                parent.layer.close(iframeIndex);
+                            });
+                        } else
+                            var index = layer.alert('失败!' + res.msg);
+                    },
+                    error: function (xhr, status, error) {
+                        console.log(error);
+                        layer.alert('错误,加载数据出错：' + error);
+                    }
+                });
+                return false; // 阻止表单提交
+            });
         });
     });
 </script>
