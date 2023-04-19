@@ -248,7 +248,8 @@ def file_upload():
         return jsonify({'code': 400, 'msg': 'Invalid file type'}), 400
     # 保存文件
     filename = secure_filename(file.filename)
-    file_url = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
+    homework_url = os.path.join(current_app.config['UPLOAD_FOLDER'], 'homework')
+    file_url = os.path.join(homework_url, filename)
     file.save(file_url)  # 文件上传
     return jsonify({'code': 200, 'msg': 'File uploaded successfully'}), 200
 
@@ -266,7 +267,8 @@ def file_upload_add():
         return jsonify({'code': 400, 'msg': 'Invalid file type'}), 400
     # 保存文件
     filename = secure_filename(file.filename)
-    file_url = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
+    homework_url = os.path.join(current_app.config['UPLOAD_FOLDER'], 'homework')
+    file_url = os.path.join(homework_url, filename)
     # file.save(file_url)  # 文件上传
     # 获取表单中的参数
     form_data = request.form.get('form_data')
@@ -519,6 +521,26 @@ def auto_correct():
                     score_ws.append([student_file, total_score])
         # Save the score workbook
         score_wb.save(score_file)
+
+        #取到分数存入学生作业表
+        with open(result_file, 'r') as f:
+            content = f.read()
+
+        start_index = content.find('201902320202')
+        total_index = content.find('Total:', start_index)
+        next_line_index = content.find('\n', total_index)
+        score = content[total_index + len('Total:'):next_line_index].strip()
+
+        homework_id = request.args.get('homework_id')
+        student_id = "201902320202"
+
+        db = get_db()
+        cursor = db.cursor()
+        sql = f'UPDATE student_homework SET score={score} WHERE homework_id={homework_id} AND student_id="{student_id}"'
+        cursor.execute(sql)
+        cursor.close()
+        db.commit()
+
         return jsonify({'code': 200, 'msg': 'Results written to result.txt"'}), 200
 
     except Exception as e:

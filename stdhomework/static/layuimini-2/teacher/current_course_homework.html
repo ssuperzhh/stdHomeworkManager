@@ -95,6 +95,9 @@
                         type: 'GET',
                         contentType: false,
                         //async:false,
+                        data:{
+                            homework_id:data.homework_id
+                        },
                         dataType: 'json',
                         success: function (res) {
                             if (res.code == 200) {
