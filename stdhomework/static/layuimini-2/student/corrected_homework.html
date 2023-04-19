@@ -117,7 +117,7 @@
                                     <div class="layui-form-item">
                                     <label class="layui-form-label">${question.question}</label>
                                     <div class="layui-input-block">
-                                    <input type="text" name="fill_${question.id}" value="${result[question.id] || ''}" class="layui-input" readonly>
+                                    <input type="text" name="fill_${question.id}" value="${result[question.id]}" class="layui-input" readonly>
                                     </div>
                                     </div>`
                                     ;
@@ -133,7 +133,7 @@
                                     <div class="layui-form-item">
                                     <label class="layui-form-label">${question.question}</label>
                                     <div class="layui-input-block">
-                                    <textarea name="essay_${question.id}" class="layui-textarea" readonly>${result[question.id] || ''}</textarea>
+                                    <textarea name="essay_${question.id}" class="layui-textarea" readonly>${result[question.id]}</textarea>
                                     </div>
                                     </div>`
                                     ;

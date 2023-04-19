@@ -87,7 +87,18 @@
                 } else {
                     if (data.state == 'finished')//表示已完成作业
                     {
-                        layer.alert('作业已完成，不允许修改');
+                        var index = layer.open({
+                            title: '查看作业',
+                            type: 2,
+                            shade: 0.2,
+                            maxmin: true,
+                            shadeClose: true,
+                            area: ['100%', '100%'],
+                            content: './corrected_homework.html',
+                        });
+                        $(window).on("resize", function () {
+                            layer.full(index);
+                        });
                     } else {
                         var index = layer.open({
                             title: '完成作业',

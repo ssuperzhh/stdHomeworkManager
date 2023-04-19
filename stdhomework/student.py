@@ -145,3 +145,21 @@ def update_student(stu_id):
 
     # 返回成功信息
     return jsonify({'code': 200, 'msg': f'ID 为 {stu_id} 的密码已更新'})
+
+
+@bp.route('/get_student_homework/<int:homework_id>/<string:student_id>', methods=['GET'])
+def get_student_homework(homework_id, student_id):
+    db = get_db()
+    cursor = db.cursor()
+
+    try:
+        sql = f'SELECT * FROM student_question WHERE homework_id = {homework_id} AND student_id="{student_id}"'  # 获取选择题
+        cursor.execute(sql)
+        student_question = cursor.fetchall()
+        return jsonify({'code': 0, 'msg': '', 'data': student_question, 'count': len(student_question)}), 200
+    except Exception as e:
+        # 如果出现异常，回滚并关闭游标
+        db.rollback()
+        cursor.close()
+        # 返回错误信息
+        return jsonify({'code': 500, 'msg': str(e)})
