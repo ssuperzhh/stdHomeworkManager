@@ -34,6 +34,23 @@
 <script src="../lib/layui-v2.6.3/layui.js" charset="utf-8"></script>
 <script src="https://cdn.bootcss.com/jquery/3.6.0/jquery.min.js"></script>
 <script>
+    function recommend(sender) {
+        let dataset = sender.dataset;
+        sessionStorage.setItem('recommend_question',JSON.stringify(dataset));
+        var index = layer.open({
+            title: '相似题推荐',
+            type: 2,
+            shade: 0.2,
+            maxmin: true,
+            area: ['60%', '50%'],
+            offset: 't',
+            content: './question_recommend.html',
+        });
+        $(window).on("resize", function () {
+            layer.full(index);
+        });
+    }
+
     layui.use(['form', 'layer'], function () {
         var form = layui.form;
         var layer = layui.layer;
@@ -75,7 +92,7 @@
                                         <input type="radio" name="choice_${question.id}" value="C" title="${question.c}"${result[question.id] === 'C' ? "checked" : "disabled"} >
                                         <input type="radio" name="choice_${question.id}" value="D" title="${question.d}"${result[question.id] === 'D' ? "checked" : "disabled"} >
                                     </div>
-                                    <button type="button" class="layui-btn layui-btn-sm layui-btn-danger">相似题型推荐</button>
+                                    <button type="button" class="layui-btn layui-btn-sm layui-btn-danger" data-question_id="${question.id}" data-knowledge="${question.knowledge}" data-question_type="${question.type}" onclick="recommend(this)">相似题型推荐</button>
                                     </div>`
                                 ;
                                 choiceQuestionHtml += questionHtml;
@@ -93,7 +110,7 @@
                                     <label class="layui-form-label">${question.question}</label>
                                     <div class="layui-input-block">
                                     <input type="text" name="fill_${question.id}" value="${result[question.id]}" class="layui-input" readonly>
-                                    <button type="button" class="layui-btn layui-btn-sm layui-btn-danger">相似题型推荐</button>
+                                    <button type="button" class="layui-btn layui-btn-sm layui-btn-danger" data-question_id="${question.id}" data-knowledge="${question.knowledge}" data-question_type="${question.type}" onclick="recommend(this)">相似题型推荐</button>
                                     </div>
                                     </div>`
                                 ;
@@ -110,7 +127,7 @@
                                     <label class="layui-form-label">${question.question}</label>
                                     <div class="layui-input-block">
                                     <textarea name="essay_${question.id}" class="layui-textarea" readonly>${result[question.id]}</textarea>
-                                    <button type="button" class="layui-btn layui-btn-sm layui-btn-danger">相似题型推荐</button>
+                                    <button type="button" class="layui-btn layui-btn-sm layui-btn-danger" data-question_id="${question.id}" data-knowledge="${question.knowledge}" data-question_type="${question.type}" onclick="recommend(this)">相似题型推荐</button>
                                     </div>
                                     </div>`
                                 ;

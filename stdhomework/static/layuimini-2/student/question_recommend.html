@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Student Homework</title>
+    <link rel="stylesheet" href="../lib/layui-v2.6.3/css/layui.css" media="all">
+    <link rel="stylesheet" href="../css/public.css" media="all">
+    <!--    <script src="../lib/layui-v2.6.3/layui.js" charset="utf-8"></script>-->
+    <!--    <script src="https://cdn.bootcss.com/jquery/3.6.0/jquery.min.js"></script>-->
+
+</head>
+<body>
+<div class="layui-container">
+    <form class="layui-form" lay-filter="quizForm">
+        <div class="layui-form-item" id="choiceQuestionContainer"></div>
+        <div class="layui-form-item" id="fillQuestionContainer"></div>
+        <div class="layui-form-item" id="essayQuestionContainer"></div>
+        <div class="layui-form-item">
+            <div class="layui-input-block">
+                <button class="layui-btn" lay-submit lay-filter="see_truth">查看答案</button>
+            </div>
+        </div>
+        <div class="layui-form-item" id="truth"></div>
+    </form>
+</div>
+<script src="../lib/layui-v2.6.3/layui.js" charset="utf-8"></script>
+<!--<script src="https://cdn.bootcss.com/jquery/3.6.0/jquery.min.js"></script>-->
+<script>
+    layui.use(['form', 'layer'], function () {
+        var form = layui.form;
+        var layer = layui.layer;
+        var $ = layui.$;
+
+        var homework = JSON.parse(sessionStorage.getItem('homework'))
+        var recommend_question = JSON.parse(sessionStorage.getItem('recommend_question'));
+        console.log(recommend_question);
+        // 通过 Ajax 请求获取题目数据
+        $.ajax({
+            url: '/teacher/question_recommend',
+            type: 'GET',
+            dataType: 'json',
+            contentType: 'application/json',
+            data: {
+                question_type: recommend_question.question_type,
+                knowledge: recommend_question.knowledge,
+                question_id: recommend_question.question_id
+            },
+            success: function (res) {
+                if (res.code === 200) {
+                    if (res.data.type == '1') {//推荐选择题
+                        var question = res.data
+                        var choiceQuestionHtml = '';
+                        var questionHtml = `
+                                <div class="layui-form-item">
+                                    <label class="layui-form-label">${question.question}</label>
+                                    <div class="layui-input-block">
+                                        <input type="radio" name="choice_${question.id}" value="A" title="${question.a}">
+                                        <input type="radio" name="choice_${question.id}" value="B" title="${question.b}">
+                                        <input type="radio" name="choice_${question.id}" value="C" title="${question.c}">
+                                        <input type="radio" name="choice_${question.id}" value="D" title="${question.d}">
+                                    </div>
+                                </div>`;
+                        choiceQuestionHtml += questionHtml;
+                        $('#choiceQuestionContainer').html(choiceQuestionHtml);
+                        form.render('radio');
+                    } else if (res.data.type == '2') { //推荐填空题
+                        // 动态加载填空题
+                        var fillQuestionHtml = '';
+                        var question = res.data;
+                        var questionHtml = `
+                                <div class="layui-form-item">
+                                    <label class="layui-form-label">${question.question}</label>
+                                    <div class="layui-input-block">
+                                        <input type="text" name="fill_${question.id}" placeholder="请输入答案" class="layui-input">
+</div>
+</div>`;
+                        fillQuestionHtml += questionHtml;
+                        $('#fillQuestionContainer').html(fillQuestionHtml);
+                    } else if (res.data.type == '3') {
+                        // 动态加载解答题
+                        var essayQuestionHtml = '';
+                        var question = res.data;
+                        var questionHtml = `
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">${question.question}</label>
+                                <div class="layui-input-block">
+                                    <textarea name="essay_${question.id}" placeholder="请输入答案" class="layui-textarea"></textarea>
+                                </div>
+                            </div>`;
+                        essayQuestionHtml += questionHtml;
+                        $('#essayQuestionContainer').html(essayQuestionHtml);
+                        form.render();
+                    } else {
+                        layer.msg(res.msg, {icon: 2, time: 2000});
+                    }
+                } else {
+                    layer.alert('未查询到相似题型', function () {
+                        var iframeIndex = parent.layer.getFrameIndex(window.name);
+                        parent.layer.close(iframeIndex);
+                    });
+                }
+            },
+            error: function () {
+                layer.msg('获取题目数据失败', {icon: 2, time: 2000});
+            }
+        })
+        ;
+        form.on('submit(see_truth)', function (data) {
+            //console.log(data.field)
+            $.ajax({
+                url: '/teacher/question_recommend_answer',
+                type: 'GET',
+                contentType: 'application/json',
+                data: {
+                    question_id: Object.keys(data.field)[0]
+                },
+                async: false,
+                dataType: 'json',
+                success: function (res) {
+                    if (res.code == 0) {
+                        let truth = res.data[0].truth;
+                        console.log(truth);
+                        var truthHtml = `
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">答案</label>
+                                <div class="layui-input-block" style="width: auto">
+                                    <input type="text" name="truth" class="layui-input" value="${truth}" readonly>
+                                </div>
+                            </div>`;
+                        $('#truth').html(truthHtml);
+                        form.render();
+                    } else
+                        layer.alert(res.msg);
+                },
+                error: function (xhr, status, error) {
+                    console.log(error);
+                    layer.alert('错误,加载接口数据出错：' + error);
+                }
+            });
+            return false; //阻止表单跳转。如果需要表单跳转，去掉这段即可。
+        });
+
+    })
+    ;
+</script>
+</body>
+</html>

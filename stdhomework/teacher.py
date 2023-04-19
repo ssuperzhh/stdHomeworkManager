@@ -105,3 +105,52 @@ def submit_score():
         db.rollback()
         cursor.close()
         return jsonify({'code': 500, 'msg': str(e)})
+
+
+import random
+
+#相似题目推荐
+@bp.route('/question_recommend', methods=['GET'])
+def question_recommend():
+    db = get_db()
+    cursor = db.cursor()
+    # 解析请求中的 JSON 数据
+    question_type = request.args.get('question_type')
+    knowledge = request.args.get('knowledge')
+    question_id = int(request.args.get('question_id'))
+    try:
+        sql = f'SELECT * FROM questioninfo WHERE type="{question_type}" AND knowledge="{knowledge}" AND id!={question_id}'
+        cursor.execute(sql)
+        recommend_questions = cursor.fetchall()
+        if recommend_questions:
+            recommend_question = random.choice(recommend_questions)
+            cursor.close()
+            # 返回成功信息
+            return jsonify({'code': 200, 'msg': '', 'data': recommend_question})
+        else:
+            return jsonify({'code': 404, 'msg': '未查询到相似题目', 'data': ''})
+    except Exception as e:
+        db.rollback()
+        cursor.close()
+        return jsonify({'code': 500, 'msg': str(e)})
+
+
+#相似题目推荐的答案
+@bp.route('/question_recommend_answer', methods=['GET'])
+def question_recommend_answer():
+    db = get_db()
+    cursor = db.cursor()
+    # 解析请求中的 JSON 数据
+    request_question_id = request.args.get('question_id')
+    question_id = int(request_question_id.split('_')[1])
+    try:
+        sql = f'SELECT * FROM questioninfo WHERE  id={question_id}'
+        cursor.execute(sql)
+        truth = cursor.fetchall()
+        cursor.close()
+        # 返回成功信息
+        return jsonify({'code': 0, 'msg': '', 'data': truth})
+    except Exception as e:
+        db.rollback()
+        cursor.close()
+        return jsonify({'code': 500, 'msg': str(e)})
