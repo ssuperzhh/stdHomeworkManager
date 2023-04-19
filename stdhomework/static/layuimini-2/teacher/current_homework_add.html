@@ -135,16 +135,20 @@
             elem: '#test-answer-normal',
             url: '/courses/upload',
             accept: 'file',
-            //auto: false, // 不自动上传
+            auto: false, // 不自动上传
             size: 0,
-            //bindAction: '#submit-btn', // 将文件上传和表单提交关联起来
+            bindAction: '#submit-btn', // 将文件上传和表单提交关联起来
             choose: function (obj) {
                 //将每次选择的文件追加到文件队列
                 var files = obj.pushFile();
                 //预读本地文件，如果是多文件，则会遍历。(不支持ie8/9)
                 obj.preview(function (index, file, result) {
+                    //console.log(index); //得到文件索引
                     //console.log(file); //得到文件对象
+                    //console.log(result); //得到文件base64编码，比如图片
                     $('#upload-file-answer').val(file.name);
+                    //formData = new FormData();
+                    formData.append('answer_file', file); // 将文件对象添加到 formData 中
                 });
             },
             done: function (res) {

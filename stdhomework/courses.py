@@ -295,6 +295,16 @@ def file_upload_add():
     homework_url = os.path.join(current_app.config['UPLOAD_FOLDER'], 'homework')
     file_url = os.path.join(homework_url, filename)
     # file.save(file_url)  # 文件上传
+    answer_file = request.files['answer_file']
+    # 检查上传的文件名是否合法
+    if answer_file.filename == '':
+        return jsonify({'code': 400, 'msg': 'No selected file'}), 400
+    if not allowed_file(answer_file.filename):
+        return jsonify({'code': 400, 'msg': 'Invalid file type'}), 400
+    # 保存文件
+    answer_filename = secure_filename(answer_file.filename)
+    homework_url = os.path.join(current_app.config['UPLOAD_FOLDER'], 'homework')
+    answer_file_url = os.path.join(homework_url, answer_filename)
     # 获取表单中的参数
     form_data = request.form.get('form_data')
     form_data = json.loads(form_data)
@@ -316,6 +326,9 @@ def file_upload_add():
         # 再添加文件
         cursor.execute(f"INSERT INTO fileInfo (url, file_name, type, homework_id) "
                        f"VALUES ('{file_url}', '{filename}','{1}', {homework_id})",
+                       )
+        cursor.execute(f"INSERT INTO fileInfo (url, file_name, type, homework_id) "
+                       f"VALUES ('{answer_file_url}', '{answer_filename}','{3}', {homework_id})",
                        )
         db.commit()
         cursor.close()
