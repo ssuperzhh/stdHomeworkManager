@@ -58,7 +58,7 @@
     <div class="layui-form-item" id="normal-homework" style="display: none">
         <form class="layui-form" id="questionForm">
             <div class="layui-row">
-                <div class="layui-col-xs12 layui-col-sm12 layui-col-md6 layui-col-md-offset3">
+                <div class="layui-col-xs12 layui-col-sm12 layui-col-md6">
                     <div class="layui-form-item">
                         <label class="layui-form-label">题目类型</label>
                         <div class="layui-input-block">
@@ -236,7 +236,7 @@
                 <input type="text" name="choice_option_c[]" required lay-verify="required" placeholder="选项C" class="layui-input">
                 <input type="text" name="choice_option_d[]" required lay-verify="required" placeholder="选项D" class="layui-input">
                 <input type="text" name="choice_answer[]" required lay-verify="required" placeholder="请输入答案" class="layui-input">
-                <input type="text" name="choice_knowledge[]" required lay-verify="required" placeholder="请输入知识点" class="layui-input">
+                <input type="text" name="choice_knowledge[]" required lay-verify="required" placeholder="请输入知识点掌握程度" class="layui-input">
                 <input type="text" name="choice_score[]" required lay-verify="required" placeholder="请输入这题分数" class="layui-input">
                 <button type="button" class="layui-btn layui-btn-xs layui-btn-danger" onclick="deleteQuestionItem(this)">删除</button>
             </div>
@@ -249,7 +249,7 @@
 <div class="layui-input-block">
 <input type="text" name="fill_question[]" required lay-verify="required" placeholder="请输入题目" class="layui-input">
 <input type="text" name="fill_answer[]" required lay-verify="required" placeholder="请输入答案" class="layui-input">
-<input type="text" name="fill_knowledge[]" required lay-verify="required" placeholder="请输入知识点" class="layui-input">
+<input type="text" name="fill_knowledge[]" required lay-verify="required" placeholder="请输入知识点掌握程度" class="layui-input">
 <input type="text" name="fill_score[]" required lay-verify="required" placeholder="请输入这题分数" class="layui-input">
 <button type="button" class="layui-btn layui-btn-xs layui-btn-danger" onclick="deleteQuestionItem(this)">删除</button>
 </div>
@@ -263,7 +263,7 @@
                                placeholder="请输入题目" class="layui-input">
                             <textarea name="answer_answer[]" required lay-verify="required" placeholder="请输入答案"
                                       class="layui-textarea"></textarea>
-                                      <input type="text" name="answer_knowledge[]" required lay-verify="required" placeholder="请输入知识点" class="layui-input">
+                                      <input type="text" name="answer_knowledge[]" required lay-verify="required" placeholder="请输入知识点掌握程度" class="layui-input">
                                       <input type="text" name="answer_score[]" required lay-verify="required" placeholder="请输入这题分数" class="layui-input">
                             <button type="button" class="layui-btn layui-btn-xs layui-btn-danger"
                                     onclick="deleteQuestionItem(this)">删除
