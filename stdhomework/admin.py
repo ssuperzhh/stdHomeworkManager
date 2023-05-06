@@ -13,6 +13,25 @@ bp = Blueprint('admin', __name__, url_prefix='/admin')
 def index():
     return render_template('admin/admin_index.html')
 
+# 定义获取用户信息的 API,可通过用户的身份或者姓名查看
+@bp.route('/admin_info', methods=['GET'])
+def get_admin_info():
+    db = get_db()
+    # 创建一个 cursor 对象
+    cursor = db.cursor()
+    admin_name = request.args.get('admin_name')
+    sql = f"SELECT * FROM admininfo where name = '{admin_name}'"
+    # 执行 SQL 查询语句
+    cursor.execute(sql)
+    # 获取查询结果
+    users = cursor.fetchall()
+    # 关闭游标
+    cursor.close()
+    if len(users) == 0:
+        return jsonify({'code': 404, 'msg': '未找到任何用户信息'})
+    # 返回查询结果
+    return jsonify({'code': 0, "msg": "", "count": len(users), 'data': users})
+
 
 # 定义获取用户信息的 API,可通过用户的身份或者姓名查看
 @bp.route('/users', methods=['GET'])
