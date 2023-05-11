@@ -55,6 +55,14 @@
             <button type="button" class="layui-btn layui-btn-danger layui-hide" id="answer-upload-reload">重传</button>
         </div>
     </div>
+        <div class="layui-form-item" id="file-check" style="display: none">
+        <label class="layui-form-label">上传Check评分文件</label>
+        <div class="layui-input-block">
+            <button type="button" class="layui-btn" id="test-check-normal">选择文件</button>
+            <input type="text" style="width: auto" class="layui-input layui-disabled" id="upload-file-check" readonly>
+            <button type="button" class="layui-btn layui-btn-danger layui-hide" id="check-upload-reload">重传</button>
+        </div>
+    </div>
     <div class="layui-form-item" id="normal-homework" style="display: none">
         <form class="layui-form" id="questionForm">
             <div class="layui-row">
@@ -135,9 +143,7 @@
             elem: '#test-answer-normal',
             url: '/courses/upload',
             accept: 'file',
-            auto: false, // 不自动上传
             size: 0,
-            bindAction: '#submit-btn', // 将文件上传和表单提交关联起来
             choose: function (obj) {
                 //将每次选择的文件追加到文件队列
                 var files = obj.pushFile();
@@ -159,6 +165,23 @@
                 formData = new FormData();
             }
         });
+        upload.render({
+            elem: '#test-check-normal',
+            url: '/courses/upload',
+            accept: 'file',
+            size: 0,
+            choose: function (obj) {
+                var files = obj.pushFile();
+                obj.preview(function (index, file, result) {
+                    $('#upload-file-check').val(file.name);
+                });
+            },
+            done: function (res) {
+                console.log(res);
+            },
+            error: function () {
+            }
+        });
         form.on('radio(radio_filter)', function (data) {
             //console.log(data.elem); //得到radio原始DOM对象
             console.log(data.value); //被点击的radio的value值
@@ -167,9 +190,11 @@
                 $('#submit-btn').show();
                 $('#file-upload').show();
                 $('#file-answer').show();
+                $('#file-check').show();
             } else if (data.value == 'normal') {
                 $('#file-upload').hide();
                 $('#file-answer').hide();
+                $('#file-check').hide();
                 $('#submit-btn').hide();
                 $('#normal-homework').show();
                 // var index = layer.open({
