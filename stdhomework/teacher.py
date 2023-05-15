@@ -108,7 +108,7 @@ def submit_score():
 
 
 import math
-
+import random
 
 # 相似题目推荐
 @bp.route('/question_recommend', methods=['GET'])
@@ -143,9 +143,12 @@ def question_recommend():
                 recommend_question['similarity'] = cosine_similarity(a, b)
             # 根据余弦相似度的结果进行排序
             sorted_recommend_questions = sorted(recommend_questions, reverse=True, key=lambda x: x['similarity'])
+            # 将相似度最大相同的几个取出随机推荐
+            same_similarities = [question for question in sorted_recommend_questions if question['similarity'] == sorted_recommend_questions[0]['similarity']]
+            recommend_result = random.choice(same_similarities)
             cursor.close()
             # 返回成功信息
-            return jsonify({'code': 200, 'msg': '', 'data': sorted_recommend_questions[0]})
+            return jsonify({'code': 200, 'msg': '', 'data': recommend_result})
         else:
             return jsonify({'code': 404, 'msg': '未查询到相似题目', 'data': ''})
     except Exception as e:
