@@ -107,26 +107,45 @@ def submit_score():
         return jsonify({'code': 500, 'msg': str(e)})
 
 
-import random
+import math
 
-#相似题目推荐
+
+# 相似题目推荐
 @bp.route('/question_recommend', methods=['GET'])
 def question_recommend():
+    def cosine_similarity(a, b):
+        dot_product = sum(i * j for i, j in zip(a, b))
+        norm_a = math.sqrt(sum(i * i for i in a))
+        norm_b = math.sqrt(sum(j * j for j in b))
+        return dot_product / (norm_a * norm_b)
+
     db = get_db()
     cursor = db.cursor()
     # 解析请求中的 JSON 数据
     question_type = request.args.get('question_type')
     knowledge = request.args.get('knowledge')
+    level = request.args.get('level')
     question_id = int(request.args.get('question_id'))
+    cursor.execute(f'SELECT weight FROM labels WHERE information = "{knowledge}"')
+    cur_knowledge_weight = cursor.fetchone()
+    cursor.execute(f'SELECT weight FROM labels WHERE information = "{level}"')
+    cur_level_weight = cursor.fetchone()
     try:
-        sql = f'SELECT * FROM questioninfo WHERE type="{question_type}" AND knowledge="{knowledge}" AND id!={question_id}'
+        sql = f'SELECT A.*, (SELECT weight FROM labels WHERE information = A.knowledge) knowledge_weight, ' \
+              f'(SELECT weight FROM labels WHERE information = A.level) level_weight ' \
+              f'FROM questioninfo A WHERE type="{question_type}" AND id!={question_id}'
         cursor.execute(sql)
         recommend_questions = cursor.fetchall()
         if recommend_questions:
-            recommend_question = random.choice(recommend_questions)
+            for recommend_question in recommend_questions:
+                a = [cur_knowledge_weight['weight'], cur_level_weight['weight']]
+                b = [recommend_question['knowledge_weight'], recommend_question['level_weight']]
+                recommend_question['similarity'] = cosine_similarity(a, b)
+            # 根据余弦相似度的结果进行排序
+            sorted_recommend_questions = sorted(recommend_questions, reverse=True, key=lambda x: x['similarity'])
             cursor.close()
             # 返回成功信息
-            return jsonify({'code': 200, 'msg': '', 'data': recommend_question})
+            return jsonify({'code': 200, 'msg': '', 'data': sorted_recommend_questions[0]})
         else:
             return jsonify({'code': 404, 'msg': '未查询到相似题目', 'data': ''})
     except Exception as e:
@@ -135,7 +154,7 @@ def question_recommend():
         return jsonify({'code': 500, 'msg': str(e)})
 
 
-#相似题目推荐的答案
+# 相似题目推荐的答案
 @bp.route('/question_recommend_answer', methods=['GET'])
 def question_recommend_answer():
     db = get_db()

@@ -92,7 +92,7 @@
                                         <input type="radio" name="choice_${question.id}" value="C" title="${question.c}"${result[question.id] === 'C' ? "checked" : "disabled"} >
                                         <input type="radio" name="choice_${question.id}" value="D" title="${question.d}"${result[question.id] === 'D' ? "checked" : "disabled"} >
                                     </div>
-                                    <button type="button" class="layui-btn layui-btn-sm layui-btn-danger" data-question_id="${question.id}" data-knowledge="${question.knowledge}" data-question_type="${question.type}" onclick="recommend(this)">相似题型推荐</button>
+                                    <button type="button" class="layui-btn layui-btn-sm layui-btn-danger" data-question_id="${question.id}" data-knowledge="${question.knowledge}" data-level="${question.level}" data-question_type="${question.type}" onclick="recommend(this)">相似题型推荐</button>
                                     </div>`
                                 ;
                                 choiceQuestionHtml += questionHtml;
@@ -110,7 +110,7 @@
                                     <label class="layui-form-label">${question.question}</label>
                                     <div class="layui-input-block">
                                     <input type="text" name="fill_${question.id}" value="${result[question.id]}" class="layui-input" readonly>
-                                    <button type="button" class="layui-btn layui-btn-sm layui-btn-danger" data-question_id="${question.id}" data-knowledge="${question.knowledge}" data-question_type="${question.type}" onclick="recommend(this)">相似题型推荐</button>
+                                    <button type="button" class="layui-btn layui-btn-sm layui-btn-danger" data-question_id="${question.id}" data-knowledge="${question.knowledge}" data-level="${question.level}" data-question_type="${question.type}" onclick="recommend(this)">相似题型推荐</button>
                                     </div>
                                     </div>`
                                 ;
@@ -127,7 +127,7 @@
                                     <label class="layui-form-label">${question.question}</label>
                                     <div class="layui-input-block">
                                     <textarea name="essay_${question.id}" class="layui-textarea" readonly>${result[question.id]}</textarea>
-                                    <button type="button" class="layui-btn layui-btn-sm layui-btn-danger" data-question_id="${question.id}" data-knowledge="${question.knowledge}" data-question_type="${question.type}" onclick="recommend(this)">相似题型推荐</button>
+                                    <button type="button" class="layui-btn layui-btn-sm layui-btn-danger" data-question_id="${question.id}" data-knowledge="${question.knowledge}" data-level="${question.level}" data-question_type="${question.type}" onclick="recommend(this)">相似题型推荐</button>
                                     </div>
                                     </div>`
                                 ;
