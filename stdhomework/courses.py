@@ -584,6 +584,15 @@ def auto_correct():
         # 返回错误信息
         return jsonify({'code': 500, 'msg': str(e)})
 
+@bp.route('/get_lables', methods=['GET'])
+def get_lables():
+    lable_type = request.args.get('lable_type')
+    db = get_db()
+    cursor = db.cursor()
+    sql = f"SELECT * FROM LABELS WHERE label_type = '{lable_type}'"
+    cursor.execute(sql)
+    lables_list = cursor.fetchall()
+    return jsonify({'code': 0, 'msg': '', 'data': lables_list, 'count':len(lables_list)})
 
 @bp.route('/normal_homework_add', methods=['POST'])
 def normal_homework_add():
@@ -606,6 +615,7 @@ def normal_homework_add():
         for i in range(len(choice)):
             answer = choice[i]['answer']
             knowledge = choice[i]['knowledge']
+            level = choice[i]['level']
             question = choice[i]['question']
             question_score = choice[i]['score']
             A = choice[i]['options']['A']
@@ -613,28 +623,30 @@ def normal_homework_add():
             C = choice[i]['options']['C']
             D = choice[i]['options']['D']
             # 添加选择题
-            choice_sql = f'INSERT INTO questioninfo (question,a,b,c,d,truth,type,knowledge,homework_id,question_score) ' \
-                         f'VALUES("{question}", "{A}", "{B}", "{C}", "{D}", "{answer}", 1, "{knowledge}", {homework_id}, "{question_score}")'
+            choice_sql = f'INSERT INTO questioninfo (question,a,b,c,d,truth,type,knowledge,level,homework_id,question_score) ' \
+                         f'VALUES("{question}", "{A}", "{B}", "{C}", "{D}", "{answer}", 1, "{knowledge}", "{level}", {homework_id}, "{question_score}")'
             cursor.execute(choice_sql)
 
         for i in range(len(fill)):
             answer = fill[i]['answer']
             knowledge = fill[i]['knowledge']
+            level = fill[i]['level']
             question = fill[i]['question']
             question_score = fill[i]['score']
             # 添加填空题
-            fill_sql = f'INSERT INTO questioninfo (question,truth,type,knowledge,homework_id,question_score) ' \
-                       f'VALUES("{question}","{answer}", 2, "{knowledge}", {homework_id}, "{question_score}")'
+            fill_sql = f'INSERT INTO questioninfo (question,truth,type,knowledge,level,homework_id,question_score) ' \
+                       f'VALUES("{question}","{answer}", 2, "{knowledge}", "{level}", {homework_id}, "{question_score}")'
             cursor.execute(fill_sql)
 
         for i in range(len(answer_content)):
             answer = answer_content[i]['answer']
             knowledge = answer_content[i]['knowledge']
+            level = answer_content[i]['level']
             question = answer_content[i]['question']
             question_score = answer_content[i]['score']
             # 添加解答
-            answer_content_sql = f'INSERT INTO questioninfo (question,truth,type,knowledge,homework_id,question_score) ' \
-                                 f'VALUES ("{question}","{answer}", 3, "{knowledge}", {homework_id}, "{question_score}")'
+            answer_content_sql = f'INSERT INTO questioninfo (question,truth,type,knowledge,level,homework_id,question_score) ' \
+                                 f'VALUES ("{question}","{answer}", 3, "{knowledge}", "{level}", {homework_id}, "{question_score}")'
             cursor.execute(answer_content_sql)
 
         db.commit()
